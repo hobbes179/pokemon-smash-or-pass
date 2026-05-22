@@ -1,0 +1,28 @@
+# -----------------------------------------------
+# IMPORTANT: votes.json holds all community data.
+# It is intentionally excluded from version control
+# so that `git push` never wipes production votes.
+# On a fresh server, copy votes.json.example → votes.json
+# -----------------------------------------------
+data/votes.json
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo

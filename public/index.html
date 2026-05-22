@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokémon: Smash or Pass</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --smash: #22c55e;
+      --smash-dim: #16a34a;
+      --smash-bg: #052e16;
+      --pass: #ef4444;
+      --pass-dim: #dc2626;
+      --pass-bg: #2d0a0a;
+      --bg: #0f0f11;
+      --surface: #18181b;
+      --surface2: #1f1f23;
+      --border: rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.13);
+      --text: #f4f4f5;
+      --muted: #71717a;
+      --accent: #facc15;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { height: 100%; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 28px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    header h1 {
+      font-family: var(--font-display);
+      font-size: 26px;
+      letter-spacing: .04em;
+      color: var(--accent);
+    }
+
+    header .subtitle {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    .global-stats {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .gstat {
+      text-align: right;
+    }
+
+    .gstat-val {
+      font-family: var(--font-display);
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .gstat-lbl {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .gstat.smash .gstat-val { color: var(--smash); }
+    .gstat.pass .gstat-val { color: var(--pass); }
+
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 200px 1fr 220px;
+      gap: 0;
+      overflow: hidden;
+    }
+
+    aside {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px 16px;
+      overflow-y: auto;
+    }
+
+    aside:last-child {
+      border-right: none;
+      border-left: 1px solid var(--border);
+    }
+
+    .aside-title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .gen-item {
+      margin-bottom: 14px;
+    }
+
+    .gen-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      user-select: none;
+    }
+
+    .gen-label input[type="checkbox"] {
+      accent-color: var(--accent);
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .gen-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-left: 23px;
+      margin-top: 3px;
+      line-height: 1.4;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 14px 0;
+    }
+
+    #center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 36px 24px;
+      gap: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #bg-glow {
+      position: absolute;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      background: rgba(250,204,21,0.04);
+      pointer-events: none;
+      transition: background .4s;
+    }
+
+    #poke-card {
+      position: relative;
+      z-index: 1;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 24px;
+      padding: 32px 28px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 280px;
+      transition: transform .15s;
+    }
+
+    #poke-card.animating {
+      animation: cardPop .25s ease;
+    }
+
+    @keyframes cardPop {
+      0% { transform: scale(1); opacity: 1; }
+      40% { transform: scale(0.93); opacity: 0.6; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes smashFlash {
+      0%,100% { background: var(--surface); }
+      50% { background: #052e16; border-color: var(--smash); }
+    }
+
+    @keyframes passFlash {
+      0%,100% { background: var(--surface); }
+      50% { background: #2d0a0a; border-color: var(--pass); }
+    }
+
+    #poke-card.voted-smash { animation: smashFlash .35s ease; }
+    #poke-card.voted-pass { animation: passFlash .35s ease; }
+
+    #poke-img {
+      width: 150px;
+      height: 150px;
+      image-rendering: pixelated;
+      transition: opacity .2s;
+    }
+
+    #poke-img.loading { opacity: 0.3; }
+
+    #poke-num {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 12px;
+    }
+
+    #poke-name {
+      font-family: var(--font-display);
+      font-size: 30px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      margin-top: 4px;
+      text-align: center;
+    }
+
+    #type-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .type-pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    #btn-row {
+      display: flex;
+      gap: 14px;
+      width: 280px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .vote-btn {
+      flex: 1;
+      padding: 16px 0;
+      font-family: var(--font-display);
+      font-size: 22px;
+      letter-spacing: .06em;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: transform .1s, opacity .1s;
+    }
+
+    .vote-btn:active { transform: scale(0.96); }
+    .vote-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    #btn-smash {
+      background: var(--smash);
+      color: #052e16;
+    }
+
+    #btn-smash:hover:not(:disabled) { background: #4ade80; }
+
+    #btn-pass {
+      background: var(--pass);
+      color: #2d0a0a;
+    }
+
+    #btn-pass:hover:not(:disabled) { background: #f87171; }
+
+    #session-stats {
+      display: flex;
+      gap: 28px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .sstat {
+      text-align: center;
+    }
+
+    .sstat-val {
+      font-family: var(--font-display);
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .sstat-lbl {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .sstat.smash .sstat-val { color: var(--smash); }
+    .sstat.pass .sstat-val { color: var(--pass); }
+
+    #skip-btn {
+      background: none;
+      border: 1px solid var(--border2);
+      color: var(--muted);
+      font-family: var(--font-body);
+      font-size: 13px;
+      padding: 7px 18px;
+      border-radius: 99px;
+      cursor: pointer;
+      transition: color .15s, border-color .15s;
+      position: relative;
+      z-index: 1;
+    }
+
+    #skip-btn:hover { color: var(--text); border-color: var(--border2); }
+
+    #no-pool {
+      text-align: center;
+      color: var(--muted);
+      font-size: 15px;
+      display: none;
+    }
+
+    .tier-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tier-item:last-child { border-bottom: none; }
+
+    .tier-rank {
+      font-family: var(--font-display);
+      font-size: 16px;
+      color: var(--muted);
+      width: 20px;
+      flex-shrink: 0;
+      text-align: center;
+    }
+
+    .tier-rank.gold { color: var(--accent); }
+    .tier-rank.silver { color: #a1a1aa; }
+    .tier-rank.bronze { color: #b45309; }
+
+    .tier-img {
+      width: 40px;
+      height: 40px;
+      image-rendering: pixelated;
+      flex-shrink: 0;
+    }
+
+    .tier-meta {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .tier-name {
+      font-size: 13px;
+      font-weight: 500;
+      text-transform: capitalize;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tier-bar-wrap {
+      height: 3px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 2px;
+      margin-top: 4px;
+      overflow: hidden;
+    }
+
+    .tier-bar { height: 100%; border-radius: 2px; transition: width .4s; }
+
+    .tier-count {
+      font-family: var(--font-display);
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .tier-count.smash { color: var(--smash); }
+    .tier-count.pass { color: var(--pass); }
+
+    #tier-empty {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+      padding: 24px 0;
+      line-height: 1.6;
+    }
+
+    #loading-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+      z-index: 10;
+    }
+
+    .spinner {
+      width: 30px;
+      height: 30px;
+      border: 2.5px solid var(--border2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 14px;
+    }
+
+    .tab {
+      flex: 1;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background: var(--surface2);
+      color: var(--muted);
+      transition: background .15s, color .15s;
+    }
+
+    .tab.active {
+      background: var(--accent);
+      color: #1a1200;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    @media (max-width: 700px) {
+      main { grid-template-columns: 1fr; }
+      aside { display: none; }
+      #center { padding: 20px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Pokémon: Smash or Pass</h1>
+    <div class="subtitle">Global community votes</div>
+  </div>
+  <div class="global-stats">
+    <div class="gstat smash">
+      <div class="gstat-val" id="g-smash">0</div>
+      <div class="gstat-lbl">smashes</div>
+    </div>
+    <div class="gstat pass">
+      <div class="gstat-val" id="g-pass">0</div>
+      <div class="gstat-lbl">passes</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <aside id="left-panel">
+    <div class="aside-title">Generations</div>
+    <div id="gen-filters"></div>
+  </aside>
+
+  <div id="center">
+    <div id="loading-overlay">
+      <div class="spinner"></div>
+      <span>Loading Pokédex…</span>
+    </div>
+
+    <div id="poke-card" style="display:none;">
+      <img id="poke-img" src="" alt="Pokémon sprite">
+      <div id="poke-num"></div>
+      <div id="poke-name">—</div>
+      <div id="type-row"></div>
+    </div>
+
+    <div id="btn-row" style="display:none;">
+      <button class="vote-btn" id="btn-pass" onclick="vote('pass')">Pass</button>
+      <button class="vote-btn" id="btn-smash" onclick="vote('smash')">Smash</button>
+    </div>
+
+    <div id="session-stats" style="display:none;">
+      <div class="sstat smash">
+        <div class="sstat-val" id="s-smash">0</div>
+        <div class="sstat-lbl">Smashed</div>
+      </div>
+      <div class="sstat">
+        <div class="sstat-val" id="s-seen">0</div>
+        <div class="sstat-lbl">Seen</div>
+      </div>
+      <div class="sstat pass">
+        <div class="sstat-val" id="s-pass">0</div>
+        <div class="sstat-lbl">Passed</div>
+      </div>
+    </div>
+
+    <button id="skip-btn" style="display:none;" onclick="nextPokemon()">Skip →</button>
+    <div id="no-pool">Select at least one generation to begin.</div>
+  </div>
+
+  <aside id="right-panel">
+    <div class="aside-title">Leaderboard</div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('smash',this)">Most smashed</button>
+      <button class="tab" onclick="switchTab('pass',this)">Most passed</button>
+    </div>
+    <div id="tab-smash" class="tab-content active">
+      <div id="tier-smash"><div id="tier-empty">Vote to see rankings</div></div>
+    </div>
+    <div id="tab-pass" class="tab-content">
+      <div id="tier-pass"></div>
+    </div>
+  </aside>
+</main>
+
+<script>
+const GENS = [
+  { label: 'Gen 1 — Kanto',   range: [1,151],   sub: '#001–151 · Bulbasaur → Mew' },
+  { label: 'Gen 2 — Johto',   range: [152,251],  sub: '#152–251 · Chikorita → Celebi' },
+  { label: 'Gen 3 — Hoenn',   range: [252,386],  sub: '#252–386 · Treecko → Deoxys' },
+  { label: 'Gen 4 — Sinnoh',  range: [387,493],  sub: '#387–493 · Turtwig → Arceus' },
+  { label: 'Gen 5 — Unova',   range: [494,649],  sub: '#494–649 · Victini → Genesect' },
+  { label: 'Gen 6 — Kalos',   range: [650,721],  sub: '#650–721 · Chespin → Diancie' },
+  { label: 'Gen 7 — Alola',   range: [722,809],  sub: '#722–809 · Rowlet → Marshadow' },
+  { label: 'Gen 8 — Galar',   range: [810,905],  sub: '#810–905 · Grookey → Enamorus' },
+  { label: 'Gen 9 — Paldea',  range: [906,1025], sub: '#906–1025 · Sprigatito → Pecharunt' },
+];
+
+const TYPE_STYLES = {
+  fire:     ['#7c2d12','#fca5a5'], water:    ['#1e3a5f','#93c5fd'],
+  grass:    ['#14532d','#86efac'], electric: ['#713f12','#fde047'],
+  psychic:  ['#4c0519','#f9a8d4'], ice:      ['#0c4a6e','#7dd3fc'],
+  dragon:   ['#312e81','#a5b4fc'], dark:     ['#1c1917','#a8a29e'],
+  fairy:    ['#500724','#fbcfe8'], normal:   ['#27272a','#d4d4d8'],
+  fighting: ['#7f1d1d','#fca5a5'], flying:   ['#1e3a5f','#bae6fd'],
+  poison:   ['#4a044e','#e879f9'], ground:   ['#422006','#fcd34d'],
+  rock:     ['#292524','#d6d3d1'], bug:      ['#1a2e05','#bef264'],
+  ghost:    ['#2e1065','#c4b5fd'], steel:    ['#1c1917','#cbd5e1'],
+};
+
+let activePool = [];
+let checkedGens = new Set(GENS.map((_, i) => i));
+let currentId = null;
+let pokeCache = {};
+let globalVotes = {};
+let sSmash = 0, sPass = 0, sSeen = 0;
+let currentTab = 'smash';
+let busy = false;
+
+function buildFilters() {
+  const c = document.getElementById('gen-filters');
+  const allLabel = document.createElement('label');
+  allLabel.className = 'gen-label';
+  allLabel.innerHTML = `<input type="checkbox" id="chk-all" checked> All games`;
+  const allItem = document.createElement('div');
+  allItem.className = 'gen-item';
+  allItem.appendChild(allLabel);
+  c.appendChild(allItem);
+  document.getElementById('chk-all').addEventListener('change', e => {
+    document.querySelectorAll('.gen-chk').forEach(ch => { ch.checked = e.target.checked; });
+    checkedGens = e.target.checked ? new Set(GENS.map((_, i) => i)) : new Set();
+    rebuildPool();
+  });
+  c.appendChild(Object.assign(document.createElement('div'), { className: 'divider' }));
+  GENS.forEach((g, i) => {
+    const item = document.createElement('div');
+    item.className = 'gen-item';
+    item.innerHTML = `<label class="gen-label"><input type="checkbox" class="gen-chk" data-i="${i}" checked> ${g.label}</label><div class="gen-sub">${g.sub}</div>`;
+    c.appendChild(item);
+    item.querySelector('input').addEventListener('change', e => {
+      i = parseInt(e.target.dataset.i);
+      e.target.checked ? checkedGens.add(i) : checkedGens.delete(i);
+      const allChk = document.getElementById('chk-all');
+      allChk.indeterminate = checkedGens.size > 0 && checkedGens.size < GENS.length;
+      allChk.checked = checkedGens.size === GENS.length;
+      rebuildPool();
+    });
+  });
+}
+
+function rebuildPool() {
+  activePool = [];
+  checkedGens.forEach(i => {
+    const [lo, hi] = GENS[i].range;
+    for (let id = lo; id <= hi; id++) activePool.push(id);
+  });
+  const noPool = document.getElementById('no-pool');
+  if (activePool.length === 0) {
+    noPool.style.display = 'block';
+    document.getElementById('poke-card').style.display = 'none';
+    document.getElementById('btn-row').style.display = 'none';
+    document.getElementById('skip-btn').style.display = 'none';
+    document.getElementById('session-stats').style.display = 'none';
+  } else {
+    noPool.style.display = 'none';
+    nextPokemon();
+  }
+}
+
+function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+async function fetchPoke(id) {
+  if (pokeCache[id]) return pokeCache[id];
+  const r = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+  const d = await r.json();
+  pokeCache[id] = { id, name: d.name, sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`, types: d.types.map(t => t.type.name) };
+  return pokeCache[id];
+}
+
+async function nextPokemon() {
+  if (activePool.length === 0 || busy) return;
+  busy = true;
+  setButtonsDisabled(true);
+  const id = rand(activePool);
+  currentId = id;
+  const card = document.getElementById('poke-card');
+  card.style.display = 'flex';
+  card.classList.remove('voted-smash', 'voted-pass');
+  document.getElementById('btn-row').style.display = 'flex';
+  document.getElementById('skip-btn').style.display = 'inline-block';
+  document.getElementById('session-stats').style.display = 'flex';
+  document.getElementById('loading-overlay').style.display = 'none';
+
+  const img = document.getElementById('poke-img');
+  img.classList.add('loading');
+  document.getElementById('poke-name').textContent = '…';
+  document.getElementById('poke-num').textContent = '';
+  document.getElementById('type-row').innerHTML = '';
+
+  try {
+    const p = await fetchPoke(id);
+    if (currentId !== id) { busy = false; return; }
+    img.src = p.sprite;
+    img.onload = () => img.classList.remove('loading');
+    img.onerror = () => img.classList.remove('loading');
+    document.getElementById('poke-name').textContent = p.name.replace(/-/g, ' ');
+    document.getElementById('poke-num').textContent = `#${String(id).padStart(4, '0')}`;
+    const tr = document.getElementById('type-row');
+    p.types.forEach(t => {
+      const [bg, fg] = TYPE_STYLES[t] || ['#27272a', '#d4d4d8'];
+      const pill = document.createElement('span');
+      pill.className = 'type-pill';
+      pill.style.background = bg; pill.style.color = fg;
+      pill.textContent = t;
+      tr.appendChild(pill);
+    });
+  } catch(e) {
+    document.getElementById('poke-name').textContent = `#${id}`;
+  }
+  setButtonsDisabled(false);
+  busy = false;
+}
+
+function setButtonsDisabled(v) {
+  document.getElementById('btn-smash').disabled = v;
+  document.getElementById('btn-pass').disabled = v;
+}
+
+async function vote(choice) {
+  if (!currentId || busy) return;
+  const id = currentId;
+  const card = document.getElementById('poke-card');
+  card.classList.add(`voted-${choice}`);
+
+  if (choice === 'smash') sSmash++; else sPass++;
+  sSeen++;
+  document.getElementById('s-smash').textContent = sSmash;
+  document.getElementById('s-pass').textContent = sPass;
+  document.getElementById('s-seen').textContent = sSeen;
+
+  const glow = document.getElementById('bg-glow');
+  if (glow) {
+    glow.style.background = choice === 'smash' ? 'rgba(34,197,94,0.07)' : 'rgba(239,68,68,0.07)';
+  }
+
+  if (!globalVotes[id]) globalVotes[id] = { smash: 0, pass: 0, name: '', sprite: '' };
+  globalVotes[id][choice]++;
+  globalVotes[id].name = document.getElementById('poke-name').textContent;
+  globalVotes[id].sprite = document.getElementById('poke-img').src;
+
+  saveVotes(id, choice);
+  renderTierList();
+
+  const gs = document.getElementById('g-smash'), gp = document.getElementById('g-pass');
+  gs.textContent = Object.values(globalVotes).reduce((a,v)=>a+v.smash,0);
+  gp.textContent = Object.values(globalVotes).reduce((a,v)=>a+v.pass,0);
+
+  setTimeout(() => nextPokemon(), 280);
+}
+
+async function saveVotes(id, choice) {
+  try {
+    await fetch('/api/vote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, choice, name: globalVotes[id].name, sprite: globalVotes[id].sprite })
+    });
+  } catch(e) {
+    // Server not available — votes stored in memory only (local/static mode)
+  }
+}
+
+async function loadVotes() {
+  try {
+    const r = await fetch('/api/votes');
+    if (r.ok) {
+      globalVotes = await r.json();
+      const gs = document.getElementById('g-smash'), gp = document.getElementById('g-pass');
+      gs.textContent = Object.values(globalVotes).reduce((a,v)=>a+v.smash,0);
+      gp.textContent = Object.values(globalVotes).reduce((a,v)=>a+v.pass,0);
+      renderTierList();
+    }
+  } catch(e) {}
+}
+
+function renderTierList() {
+  const entries = Object.entries(globalVotes)
+    .map(([id, v]) => ({ id, ...v }))
+    .filter(e => (e.smash + e.pass) > 0);
+
+  const bySmash = [...entries].sort((a,b) => b.smash - a.smash).slice(0, 10);
+  const byPass  = [...entries].sort((a,b) => b.pass  - a.pass ).slice(0, 10);
+
+  renderBoard('tier-smash', bySmash, 'smash');
+  renderBoard('tier-pass',  byPass,  'pass');
+}
+
+function renderBoard(containerId, entries, mode) {
+  const el = document.getElementById(containerId);
+  if (entries.length === 0) { el.innerHTML = '<div id="tier-empty">Vote to see rankings</div>'; return; }
+  const maxVal = entries[0][mode] || 1;
+  el.innerHTML = '';
+  entries.forEach((e, idx) => {
+    const rankClass = idx === 0 ? 'gold' : idx === 1 ? 'silver' : idx === 2 ? 'bronze' : '';
+    const barColor = mode === 'smash' ? '#22c55e' : '#ef4444';
+    const pct = Math.round((e[mode] / maxVal) * 100);
+    const div = document.createElement('div');
+    div.className = 'tier-item';
+    div.innerHTML = `
+      <div class="tier-rank ${rankClass}">${idx + 1}</div>
+      <img class="tier-img" src="${e.sprite}" alt="${e.name}" loading="lazy">
+      <div class="tier-meta">
+        <div class="tier-name">${e.name}</div>
+        <div class="tier-bar-wrap"><div class="tier-bar" style="width:${pct}%;background:${barColor}"></div></div>
+      </div>
+      <div class="tier-count ${mode}">${e[mode]}</div>`;
+    el.appendChild(div);
+  });
+}
+
+function switchTab(tab, btn) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(`tab-${tab}`).classList.add('active');
+}
+
+document.getElementById('bg-glow') || document.getElementById('center').insertAdjacentHTML('afterbegin','<div id="bg-glow"></div>');
+
+buildFilters();
+loadVotes();
+
+(async () => {
+  const r = await fetch('https://pokeapi.co/api/v2/pokemon?limit=1025');
+  const d = await r.json();
+  activePool = d.results.map((_, i) => i + 1);
+  document.getElementById('loading-overlay').style.display = 'none';
+  nextPokemon();
+})();
+</script>
+</body>
+</html>
