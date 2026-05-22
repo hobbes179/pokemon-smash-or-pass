@@ -154,14 +154,22 @@ function vote(choice) {
 
   playSfx(choice);
 
-  try {
-    db.rpc('record_vote', {
-      p_id: String(id),
-      p_choice: choice,
-      p_name: s.current.name || '',
-      p_sprite: s.current.sprite || '',
-    }).catch(() => {});
-  } catch (e) {}
+  (async () => {
+    try {
+      const { data } = await db.from('votes')
+        .select('smash,pass')
+        .eq('pokemon_id', String(id))
+        .maybeSingle();
+      const row = data || { smash: 0, pass: 0 };
+      await db.from('votes').upsert({
+        pokemon_id: String(id),
+        smash: row.smash + (choice === 'smash' ? 1 : 0),
+        pass: row.pass + (choice === 'pass' ? 1 : 0),
+        name: s.current.name || '',
+        sprite: s.current.sprite || '',
+      });
+    } catch (e) {}
+  })();
 
   setTimeout(() => advance(), 1300);
 }
