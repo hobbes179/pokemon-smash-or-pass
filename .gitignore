@@ -1,9 +1,5 @@
-# -----------------------------------------------
-# IMPORTANT: votes.json holds all community data.
-# It is intentionally excluded from version control
-# so that `git push` never wipes production votes.
-# On a fresh server, copy votes.json.example → votes.json
-# -----------------------------------------------
+# votes.json is used for local dev only.
+# Production data lives in Supabase (see .env.example).
 data/votes.json
 
 # Node
