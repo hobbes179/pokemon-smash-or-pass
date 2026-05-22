@@ -59,10 +59,17 @@ async function fetchPoke(id) {
   try {
     const r = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
     const d = await r.json();
+    const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+    await new Promise(resolve => {
+      const img = new Image();
+      img.onload = resolve;
+      img.onerror = resolve;
+      img.src = spriteUrl;
+    });
     pokeCache[id] = {
       id,
       name: d.name,
-      sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`,
+      sprite: spriteUrl,
       types: d.types.map(t => t.type.name),
     };
     return pokeCache[id];
@@ -197,6 +204,16 @@ function useSOP() {
   const [, force] = React.useReducer(x => x + 1, 0);
   React.useEffect(() => SOPStore.subscribe(force), []);
   return SOPStore.get();
+}
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = React.useState(() => window.innerWidth < 640);
+  React.useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+  return isMobile;
 }
 
 let lastGenSig = '';
@@ -536,6 +553,7 @@ function CartridgeTheme() {
   const { current, loading, sSmash, sPass, sSeen, globalVotes, checkedGens } = s;
   const { phase } = useEntryPhase(current?.id);
   const { active: voteActive, choice } = useVoteAnim();
+  const isMobile = useIsMobile();
 
   const gSmash = Object.values(globalVotes).reduce((a, v) => a + v.smash, 0);
   const gPass = Object.values(globalVotes).reduce((a, v) => a + v.pass, 0);
@@ -562,8 +580,8 @@ function CartridgeTheme() {
         </div>
       </div>
 
-      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '180px 1fr 210px', overflow: 'hidden' }}>
-        <div style={{ borderRight: `4px solid ${DMG.black}`, background: DMG.bg2, padding: 14, overflow: 'auto' }}>
+      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '180px 1fr 210px', overflow: isMobile ? 'auto' : 'hidden' }}>
+        <div style={{ borderRight: isMobile ? 'none' : `4px solid ${DMG.black}`, borderTop: isMobile ? `4px solid ${DMG.black}` : 'none', background: DMG.bg2, padding: 14, overflow: 'visible', order: isMobile ? 2 : 0 }}>
           <div style={{ fontSize: 10, color: DMG.black, marginBottom: 12 }}>►GAMES</div>
           <CartCheckbox
             label="ALL"
@@ -587,15 +605,16 @@ function CartridgeTheme() {
           position: 'relative', display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', padding: 18, gap: 16,
           background: `repeating-linear-gradient(0deg, ${DMG.bg} 0 3px, ${DMG.bg2} 3px 4px)`,
+          order: isMobile ? 0 : 1,
         }}>
-          <div style={{
+          {!isMobile && <div style={{
             position: 'absolute', inset: 12,
             border: `4px solid ${DMG.black}`,
             boxShadow: `inset 0 0 0 4px ${DMG.bg}, inset 0 0 0 8px ${DMG.ink}`,
             pointerEvents: 'none',
-          }} />
+          }} />}
 
-          <div style={{ position: 'relative', zIndex: 1, width: 280, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+          <div style={{ position: 'relative', zIndex: 1, width: isMobile ? '100%' : 280, maxWidth: 360, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
             <CreatureStage
               current={current}
               phase={phase}
@@ -640,7 +659,7 @@ function CartridgeTheme() {
           </div>
         </div>
 
-        <div style={{ borderLeft: `4px solid ${DMG.black}`, background: DMG.bg2, padding: 14, overflow: 'auto' }}>
+        <div style={{ borderLeft: isMobile ? 'none' : `4px solid ${DMG.black}`, borderTop: isMobile ? `4px solid ${DMG.black}` : 'none', background: DMG.bg2, padding: 14, overflow: 'visible', order: isMobile ? 1 : 2 }}>
           <div style={{ fontSize: 10, marginBottom: 12 }}>►TOP RATED</div>
           <Leaderboard mode="smash" votes={globalVotes} palette={DMG} pixelated />
           <div style={{ height: 12 }} />
@@ -775,6 +794,7 @@ function FoilTheme() {
   const { current, loading, sSmash, sPass, sSeen, globalVotes, checkedGens } = s;
   const { phase } = useEntryPhase(current?.id);
   const { active: voteActive, choice } = useVoteAnim();
+  const isMobile = useIsMobile();
 
   const gSmash = Object.values(globalVotes).reduce((a, v) => a + v.smash, 0);
   const gPass = Object.values(globalVotes).reduce((a, v) => a + v.pass, 0);
@@ -821,9 +841,11 @@ function FoilTheme() {
         </div>
       </div>
 
-      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '190px 1fr 220px', overflow: 'hidden' }}>
+      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '190px 1fr 220px', overflow: isMobile ? 'auto' : 'hidden' }}>
         <div style={{
-          borderRight: `1px solid ${FOIL.gold}30`, padding: '20px 16px', overflow: 'auto',
+          borderRight: isMobile ? 'none' : `1px solid ${FOIL.gold}30`,
+          borderTop: isMobile ? `1px solid ${FOIL.gold}30` : 'none',
+          padding: '20px 16px', overflow: 'visible', order: isMobile ? 2 : 0,
         }}>
           <FoilHeading>SET FILTER</FoilHeading>
           <FoilCheck
@@ -848,9 +870,10 @@ function FoilTheme() {
           position: 'relative', display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', padding: 18, gap: 14,
           background: `radial-gradient(circle at center, ${FOIL.gold}10 0%, transparent 60%)`,
+          order: isMobile ? 0 : 1,
         }}>
           <div style={{
-            width: 280, padding: '10px 10px 18px',
+            width: isMobile ? '100%' : 280, maxWidth: 360, padding: '10px 10px 18px',
             background: `
               conic-gradient(from 210deg at 50% 50%,
                 #f9efc8 0deg, #fbecc9 30deg, #f5dcb7 60deg, #ead2a2 90deg,
@@ -930,7 +953,7 @@ function FoilTheme() {
             <div style={{ color: FOIL.muted, padding: 20 }}>Select a set to begin</div>
           )}
 
-          <div style={{ display: 'flex', gap: 12, width: 280, marginTop: 6 }}>
+          <div style={{ display: 'flex', gap: 12, width: isMobile ? '100%' : 280, maxWidth: 360, marginTop: 6 }}>
             <FoilButton onClick={() => vote('pass')} bg={FOIL.pass} disabled={!current || phase !== 'idle'}>Pass</FoilButton>
             <FoilButton onClick={() => vote('smash')} bg={FOIL.smash} disabled={!current || phase !== 'idle'}>Smash</FoilButton>
           </div>
@@ -941,7 +964,7 @@ function FoilTheme() {
           }}>Skip →</button>
         </div>
 
-        <div style={{ borderLeft: `1px solid ${FOIL.gold}30`, padding: '20px 16px', overflow: 'auto' }}>
+        <div style={{ borderLeft: isMobile ? 'none' : `1px solid ${FOIL.gold}30`, borderTop: isMobile ? `1px solid ${FOIL.gold}30` : 'none', padding: '20px 16px', overflow: 'visible', order: isMobile ? 1 : 2 }}>
           <FoilHeading>MOST SMASHED</FoilHeading>
           <Leaderboard mode="smash" votes={globalVotes} palette={{...FOIL, smash: FOIL.smash, muted: FOIL.muted, border: FOIL.gold }} />
           <div style={{ height: 12 }} />
@@ -1108,6 +1131,7 @@ function DexTheme() {
   const { current, loading, sSmash, sPass, sSeen, globalVotes, checkedGens } = s;
   const { phase } = useEntryPhase(current?.id);
   const { active: voteActive, choice } = useVoteAnim();
+  const isMobile = useIsMobile();
 
   const gSmash = Object.values(globalVotes).reduce((a, v) => a + v.smash, 0);
   const gPass = Object.values(globalVotes).reduce((a, v) => a + v.pass, 0);
@@ -1153,10 +1177,12 @@ function DexTheme() {
         </div>
       </div>
 
-      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '200px 1fr 220px', overflow: 'hidden' }}>
+      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '200px 1fr 220px', overflow: isMobile ? 'auto' : 'hidden' }}>
         <div style={{
-          background: DEX.surface2, padding: 18, overflow: 'auto',
-          borderRight: `1px solid ${DEX.border}`,
+          background: DEX.surface2, padding: 18, overflow: 'visible',
+          borderRight: isMobile ? 'none' : `1px solid ${DEX.border}`,
+          borderTop: isMobile ? `1px solid ${DEX.border}` : 'none',
+          order: isMobile ? 2 : 0,
         }}>
           <DexLabel>REGION FILTER</DexLabel>
           <DexCheck
@@ -1181,9 +1207,10 @@ function DexTheme() {
         <div style={{
           position: 'relative', display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', padding: '20px 22px', gap: 16,
+          order: isMobile ? 0 : 1,
         }}>
           <div style={{
-            width: 320,
+            width: isMobile ? '100%' : 320, maxWidth: 380,
             background: DEX.panel,
             borderRadius: 18,
             padding: 10,
@@ -1294,7 +1321,7 @@ function DexTheme() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: 12, width: 320, marginTop: 4 }}>
+          <div style={{ display: 'flex', gap: 12, width: isMobile ? '100%' : 320, maxWidth: 380, marginTop: 4 }}>
             <DexButton onClick={() => vote('pass')} disabled={!current || phase !== 'idle'} variant="pass">
               <span style={{ fontSize: 11, letterSpacing: 2, opacity: 0.85, display: 'block' }}>L · ABANDON</span>
               <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: 2 }}>PASS</span>
@@ -1312,8 +1339,10 @@ function DexTheme() {
         </div>
 
         <div style={{
-          background: DEX.surface2, padding: 18, overflow: 'auto',
-          borderLeft: `1px solid ${DEX.border}`,
+          background: DEX.surface2, padding: 18, overflow: 'visible',
+          borderLeft: isMobile ? 'none' : `1px solid ${DEX.border}`,
+          borderTop: isMobile ? `1px solid ${DEX.border}` : 'none',
+          order: isMobile ? 1 : 2,
         }}>
           <DexLabel>TOP SMASH</DexLabel>
           <Leaderboard mode="smash" votes={globalVotes} palette={{ ...DEX, smash: DEX.smash, muted: DEX.muted, ink: DEX.muted }} />
