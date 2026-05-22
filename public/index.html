@@ -11,6 +11,7 @@
   <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
   <style>
     html, body { margin: 0; padding: 0; height: 100%; }
@@ -22,6 +23,11 @@
   <div id="root"></div>
 
   <script type="text/babel" data-presets="react">
+// ===== Supabase client =====
+const SUPABASE_URL  = 'REPLACE_WITH_YOUR_SUPABASE_URL';
+const SUPABASE_ANON = 'REPLACE_WITH_YOUR_SUPABASE_ANON_KEY';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
 // ===== js/shared.jsx =====
 
 const GENS = [
@@ -148,10 +154,11 @@ function vote(choice) {
 
   playSfx(choice);
 
-  fetch('/api/vote', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id, choice, name: s.current.name, sprite: s.current.sprite }),
+  db.rpc('record_vote', {
+    p_id: String(id),
+    p_choice: choice,
+    p_name: s.current.name || '',
+    p_sprite: s.current.sprite || '',
   }).catch(() => {});
 
   setTimeout(() => advance(), 1300);
@@ -166,11 +173,13 @@ function skip() {
 
 async function loadGlobalVotes() {
   try {
-    const r = await fetch('/api/votes');
-    if (r.ok) {
-      const data = await r.json();
-      SOPStore.set({ globalVotes: data });
+    const { data, error } = await db.from('votes').select('*');
+    if (error || !data) return;
+    const votes = {};
+    for (const row of data) {
+      votes[row.pokemon_id] = { smash: row.smash, pass: row.pass, name: row.name, sprite: row.sprite };
     }
+    SOPStore.set({ globalVotes: votes });
   } catch (e) {}
 }
 
