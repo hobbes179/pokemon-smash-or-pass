@@ -1,804 +1,1585 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pokémon: Smash or Pass</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Anton&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
   <style>
-    :root {
-      --smash: #22c55e;
-      --smash-dim: #16a34a;
-      --smash-bg: #052e16;
-      --pass: #ef4444;
-      --pass-dim: #dc2626;
-      --pass-bg: #2d0a0a;
-      --bg: #0f0f11;
-      --surface: #18181b;
-      --surface2: #1f1f23;
-      --border: rgba(255,255,255,0.07);
-      --border2: rgba(255,255,255,0.13);
-      --text: #f4f4f5;
-      --muted: #71717a;
-      --accent: #facc15;
-      --font-display: 'Bebas Neue', sans-serif;
-      --font-body: 'DM Sans', sans-serif;
-      --radius: 14px;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { height: 100%; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font-body);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 18px 28px;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface);
-    }
-
-    header h1 {
-      font-family: var(--font-display);
-      font-size: 26px;
-      letter-spacing: .04em;
-      color: var(--accent);
-    }
-
-    header .subtitle {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 1px;
-    }
-
-    .global-stats {
-      display: flex;
-      gap: 20px;
-      align-items: center;
-    }
-
-    .gstat {
-      text-align: right;
-    }
-
-    .gstat-val {
-      font-family: var(--font-display);
-      font-size: 22px;
-      line-height: 1;
-    }
-
-    .gstat-lbl {
-      font-size: 11px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .06em;
-    }
-
-    .gstat.smash .gstat-val { color: var(--smash); }
-    .gstat.pass .gstat-val { color: var(--pass); }
-
-    main {
-      flex: 1;
-      display: grid;
-      grid-template-columns: 200px 1fr 220px;
-      gap: 0;
-      overflow: hidden;
-    }
-
-    aside {
-      background: var(--surface);
-      border-right: 1px solid var(--border);
-      padding: 20px 16px;
-      overflow-y: auto;
-    }
-
-    aside:last-child {
-      border-right: none;
-      border-left: 1px solid var(--border);
-    }
-
-    .aside-title {
-      font-family: var(--font-display);
-      font-size: 16px;
-      letter-spacing: .06em;
-      color: var(--muted);
-      margin-bottom: 16px;
-    }
-
-    .gen-item {
-      margin-bottom: 14px;
-    }
-
-    .gen-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text);
-      user-select: none;
-    }
-
-    .gen-label input[type="checkbox"] {
-      accent-color: var(--accent);
-      width: 15px;
-      height: 15px;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-
-    .gen-sub {
-      font-size: 11px;
-      color: var(--muted);
-      margin-left: 23px;
-      margin-top: 3px;
-      line-height: 1.4;
-    }
-
-    .divider {
-      height: 1px;
-      background: var(--border);
-      margin: 14px 0;
-    }
-
-    #center {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 36px 24px;
-      gap: 24px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    #bg-glow {
-      position: absolute;
-      width: 320px;
-      height: 320px;
-      border-radius: 50%;
-      background: rgba(250,204,21,0.04);
-      pointer-events: none;
-      transition: background .4s;
-    }
-
-    #poke-card {
-      position: relative;
-      z-index: 1;
-      background: var(--surface);
-      border: 1px solid var(--border2);
-      border-radius: 24px;
-      padding: 32px 28px 24px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 280px;
-      transition: transform .15s;
-    }
-
-    #poke-card.animating {
-      animation: cardPop .25s ease;
-    }
-
-    @keyframes cardPop {
-      0% { transform: scale(1); opacity: 1; }
-      40% { transform: scale(0.93); opacity: 0.6; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-
-    @keyframes smashFlash {
-      0%,100% { background: var(--surface); }
-      50% { background: #052e16; border-color: var(--smash); }
-    }
-
-    @keyframes passFlash {
-      0%,100% { background: var(--surface); }
-      50% { background: #2d0a0a; border-color: var(--pass); }
-    }
-
-    #poke-card.voted-smash { animation: smashFlash .35s ease; }
-    #poke-card.voted-pass { animation: passFlash .35s ease; }
-
-    #poke-img {
-      width: 150px;
-      height: 150px;
-      image-rendering: pixelated;
-      transition: opacity .2s;
-    }
-
-    #poke-img.loading { opacity: 0.3; }
-
-    #poke-num {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 12px;
-    }
-
-    #poke-name {
-      font-family: var(--font-display);
-      font-size: 30px;
-      letter-spacing: .04em;
-      text-transform: uppercase;
-      margin-top: 4px;
-      text-align: center;
-    }
-
-    #type-row {
-      display: flex;
-      gap: 6px;
-      margin-top: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .type-pill {
-      font-size: 11px;
-      font-weight: 600;
-      padding: 3px 10px;
-      border-radius: 99px;
-      text-transform: uppercase;
-      letter-spacing: .05em;
-    }
-
-    #btn-row {
-      display: flex;
-      gap: 14px;
-      width: 280px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .vote-btn {
-      flex: 1;
-      padding: 16px 0;
-      font-family: var(--font-display);
-      font-size: 22px;
-      letter-spacing: .06em;
-      border: none;
-      border-radius: var(--radius);
-      cursor: pointer;
-      transition: transform .1s, opacity .1s;
-    }
-
-    .vote-btn:active { transform: scale(0.96); }
-    .vote-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    #btn-smash {
-      background: var(--smash);
-      color: #052e16;
-    }
-
-    #btn-smash:hover:not(:disabled) { background: #4ade80; }
-
-    #btn-pass {
-      background: var(--pass);
-      color: #2d0a0a;
-    }
-
-    #btn-pass:hover:not(:disabled) { background: #f87171; }
-
-    #session-stats {
-      display: flex;
-      gap: 28px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .sstat {
-      text-align: center;
-    }
-
-    .sstat-val {
-      font-family: var(--font-display);
-      font-size: 28px;
-      line-height: 1;
-    }
-
-    .sstat-lbl {
-      font-size: 11px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .06em;
-    }
-
-    .sstat.smash .sstat-val { color: var(--smash); }
-    .sstat.pass .sstat-val { color: var(--pass); }
-
-    #skip-btn {
-      background: none;
-      border: 1px solid var(--border2);
-      color: var(--muted);
-      font-family: var(--font-body);
-      font-size: 13px;
-      padding: 7px 18px;
-      border-radius: 99px;
-      cursor: pointer;
-      transition: color .15s, border-color .15s;
-      position: relative;
-      z-index: 1;
-    }
-
-    #skip-btn:hover { color: var(--text); border-color: var(--border2); }
-
-    #no-pool {
-      text-align: center;
-      color: var(--muted);
-      font-size: 15px;
-      display: none;
-    }
-
-    .tier-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .tier-item:last-child { border-bottom: none; }
-
-    .tier-rank {
-      font-family: var(--font-display);
-      font-size: 16px;
-      color: var(--muted);
-      width: 20px;
-      flex-shrink: 0;
-      text-align: center;
-    }
-
-    .tier-rank.gold { color: var(--accent); }
-    .tier-rank.silver { color: #a1a1aa; }
-    .tier-rank.bronze { color: #b45309; }
-
-    .tier-img {
-      width: 40px;
-      height: 40px;
-      image-rendering: pixelated;
-      flex-shrink: 0;
-    }
-
-    .tier-meta {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .tier-name {
-      font-size: 13px;
-      font-weight: 500;
-      text-transform: capitalize;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .tier-bar-wrap {
-      height: 3px;
-      background: rgba(255,255,255,0.07);
-      border-radius: 2px;
-      margin-top: 4px;
-      overflow: hidden;
-    }
-
-    .tier-bar { height: 100%; border-radius: 2px; transition: width .4s; }
-
-    .tier-count {
-      font-family: var(--font-display);
-      font-size: 16px;
-      flex-shrink: 0;
-    }
-
-    .tier-count.smash { color: var(--smash); }
-    .tier-count.pass { color: var(--pass); }
-
-    #tier-empty {
-      font-size: 13px;
-      color: var(--muted);
-      text-align: center;
-      padding: 24px 0;
-      line-height: 1.6;
-    }
-
-    #loading-overlay {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 10px;
-      color: var(--muted);
-      font-size: 14px;
-      z-index: 10;
-    }
-
-    .spinner {
-      width: 30px;
-      height: 30px;
-      border: 2.5px solid var(--border2);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin .8s linear infinite;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .tabs {
-      display: flex;
-      gap: 4px;
-      margin-bottom: 14px;
-    }
-
-    .tab {
-      flex: 1;
-      font-size: 12px;
-      font-weight: 500;
-      padding: 6px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      background: var(--surface2);
-      color: var(--muted);
-      transition: background .15s, color .15s;
-    }
-
-    .tab.active {
-      background: var(--accent);
-      color: #1a1200;
-    }
-
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-
-    @media (max-width: 700px) {
-      main { grid-template-columns: 1fr; }
-      aside { display: none; }
-      #center { padding: 20px 16px; }
-    }
+    html, body { margin: 0; padding: 0; height: 100%; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: #1e1e2c; overflow: hidden; }
+    #root { width: 100vw; height: 100vh; }
   </style>
 </head>
 <body>
+  <div id="root"></div>
 
-<header>
-  <div>
-    <h1>Pokémon: Smash or Pass</h1>
-    <div class="subtitle">Global community votes</div>
-  </div>
-  <div class="global-stats">
-    <div class="gstat smash">
-      <div class="gstat-val" id="g-smash">0</div>
-      <div class="gstat-lbl">smashes</div>
-    </div>
-    <div class="gstat pass">
-      <div class="gstat-val" id="g-pass">0</div>
-      <div class="gstat-lbl">passes</div>
-    </div>
-  </div>
-</header>
+  <script type="text/babel" data-presets="react">
+// ===== js/shared.jsx =====
 
-<main>
-  <aside id="left-panel">
-    <div class="aside-title">Generations</div>
-    <div id="gen-filters"></div>
-  </aside>
-
-  <div id="center">
-    <div id="loading-overlay">
-      <div class="spinner"></div>
-      <span>Loading Pokédex…</span>
-    </div>
-
-    <div id="poke-card" style="display:none;">
-      <img id="poke-img" src="" alt="Pokémon sprite">
-      <div id="poke-num"></div>
-      <div id="poke-name">—</div>
-      <div id="type-row"></div>
-    </div>
-
-    <div id="btn-row" style="display:none;">
-      <button class="vote-btn" id="btn-pass" onclick="vote('pass')">Pass</button>
-      <button class="vote-btn" id="btn-smash" onclick="vote('smash')">Smash</button>
-    </div>
-
-    <div id="session-stats" style="display:none;">
-      <div class="sstat smash">
-        <div class="sstat-val" id="s-smash">0</div>
-        <div class="sstat-lbl">Smashed</div>
-      </div>
-      <div class="sstat">
-        <div class="sstat-val" id="s-seen">0</div>
-        <div class="sstat-lbl">Seen</div>
-      </div>
-      <div class="sstat pass">
-        <div class="sstat-val" id="s-pass">0</div>
-        <div class="sstat-lbl">Passed</div>
-      </div>
-    </div>
-
-    <button id="skip-btn" style="display:none;" onclick="nextPokemon()">Skip →</button>
-    <div id="no-pool">Select at least one generation to begin.</div>
-  </div>
-
-  <aside id="right-panel">
-    <div class="aside-title">Leaderboard</div>
-    <div class="tabs">
-      <button class="tab active" onclick="switchTab('smash',this)">Most smashed</button>
-      <button class="tab" onclick="switchTab('pass',this)">Most passed</button>
-    </div>
-    <div id="tab-smash" class="tab-content active">
-      <div id="tier-smash"><div id="tier-empty">Vote to see rankings</div></div>
-    </div>
-    <div id="tab-pass" class="tab-content">
-      <div id="tier-pass"></div>
-    </div>
-  </aside>
-</main>
-
-<script>
 const GENS = [
-  { label: 'Gen 1 — Kanto',   range: [1,151],   sub: '#001–151 · Bulbasaur → Mew' },
-  { label: 'Gen 2 — Johto',   range: [152,251],  sub: '#152–251 · Chikorita → Celebi' },
-  { label: 'Gen 3 — Hoenn',   range: [252,386],  sub: '#252–386 · Treecko → Deoxys' },
-  { label: 'Gen 4 — Sinnoh',  range: [387,493],  sub: '#387–493 · Turtwig → Arceus' },
-  { label: 'Gen 5 — Unova',   range: [494,649],  sub: '#494–649 · Victini → Genesect' },
-  { label: 'Gen 6 — Kalos',   range: [650,721],  sub: '#650–721 · Chespin → Diancie' },
-  { label: 'Gen 7 — Alola',   range: [722,809],  sub: '#722–809 · Rowlet → Marshadow' },
-  { label: 'Gen 8 — Galar',   range: [810,905],  sub: '#810–905 · Grookey → Enamorus' },
-  { label: 'Gen 9 — Paldea',  range: [906,1025], sub: '#906–1025 · Sprigatito → Pecharunt' },
+  { label: 'Gen 1 · Kanto',   range: [1, 151],   sub: '#001–151' },
+  { label: 'Gen 2 · Johto',   range: [152, 251], sub: '#152–251' },
+  { label: 'Gen 3 · Hoenn',   range: [252, 386], sub: '#252–386' },
+  { label: 'Gen 4 · Sinnoh',  range: [387, 493], sub: '#387–493' },
+  { label: 'Gen 5 · Unova',   range: [494, 649], sub: '#494–649' },
+  { label: 'Gen 6 · Kalos',   range: [650, 721], sub: '#650–721' },
+  { label: 'Gen 7 · Alola',   range: [722, 809], sub: '#722–809' },
+  { label: 'Gen 8 · Galar',   range: [810, 905], sub: '#810–905' },
+  { label: 'Gen 9 · Paldea',  range: [906, 1025],sub: '#906–1025' },
 ];
 
-const TYPE_STYLES = {
-  fire:     ['#7c2d12','#fca5a5'], water:    ['#1e3a5f','#93c5fd'],
-  grass:    ['#14532d','#86efac'], electric: ['#713f12','#fde047'],
-  psychic:  ['#4c0519','#f9a8d4'], ice:      ['#0c4a6e','#7dd3fc'],
-  dragon:   ['#312e81','#a5b4fc'], dark:     ['#1c1917','#a8a29e'],
-  fairy:    ['#500724','#fbcfe8'], normal:   ['#27272a','#d4d4d8'],
-  fighting: ['#7f1d1d','#fca5a5'], flying:   ['#1e3a5f','#bae6fd'],
-  poison:   ['#4a044e','#e879f9'], ground:   ['#422006','#fcd34d'],
-  rock:     ['#292524','#d6d3d1'], bug:      ['#1a2e05','#bef264'],
-  ghost:    ['#2e1065','#c4b5fd'], steel:    ['#1c1917','#cbd5e1'],
-};
-
-let activePool = [];
-let checkedGens = new Set(GENS.map((_, i) => i));
-let currentId = null;
-let pokeCache = {};
-let globalVotes = {};
-let sSmash = 0, sPass = 0, sSeen = 0;
-let currentTab = 'smash';
-let busy = false;
-
-function buildFilters() {
-  const c = document.getElementById('gen-filters');
-  const allLabel = document.createElement('label');
-  allLabel.className = 'gen-label';
-  allLabel.innerHTML = `<input type="checkbox" id="chk-all" checked> All games`;
-  const allItem = document.createElement('div');
-  allItem.className = 'gen-item';
-  allItem.appendChild(allLabel);
-  c.appendChild(allItem);
-  document.getElementById('chk-all').addEventListener('change', e => {
-    document.querySelectorAll('.gen-chk').forEach(ch => { ch.checked = e.target.checked; });
-    checkedGens = e.target.checked ? new Set(GENS.map((_, i) => i)) : new Set();
-    rebuildPool();
-  });
-  c.appendChild(Object.assign(document.createElement('div'), { className: 'divider' }));
-  GENS.forEach((g, i) => {
-    const item = document.createElement('div');
-    item.className = 'gen-item';
-    item.innerHTML = `<label class="gen-label"><input type="checkbox" class="gen-chk" data-i="${i}" checked> ${g.label}</label><div class="gen-sub">${g.sub}</div>`;
-    c.appendChild(item);
-    item.querySelector('input').addEventListener('change', e => {
-      i = parseInt(e.target.dataset.i);
-      e.target.checked ? checkedGens.add(i) : checkedGens.delete(i);
-      const allChk = document.getElementById('chk-all');
-      allChk.indeterminate = checkedGens.size > 0 && checkedGens.size < GENS.length;
-      allChk.checked = checkedGens.size === GENS.length;
-      rebuildPool();
-    });
-  });
+window.SOP_AUDIO = window.SOP_AUDIO || {};
+function playSfx(key) {
+  const url = window.SOP_AUDIO?.[key];
+  if (!url) return;
+  try {
+    const a = new Audio(url);
+    a.volume = 0.6;
+    a.play().catch(() => {});
+  } catch (e) { /* noop */ }
 }
 
-function rebuildPool() {
-  activePool = [];
-  checkedGens.forEach(i => {
-    const [lo, hi] = GENS[i].range;
-    for (let id = lo; id <= hi; id++) activePool.push(id);
-  });
-  const noPool = document.getElementById('no-pool');
-  if (activePool.length === 0) {
-    noPool.style.display = 'block';
-    document.getElementById('poke-card').style.display = 'none';
-    document.getElementById('btn-row').style.display = 'none';
-    document.getElementById('skip-btn').style.display = 'none';
-    document.getElementById('session-stats').style.display = 'none';
-  } else {
-    noPool.style.display = 'none';
-    nextPokemon();
-  }
-}
-
-function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-
+const pokeCache = {};
 async function fetchPoke(id) {
   if (pokeCache[id]) return pokeCache[id];
-  const r = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
-  const d = await r.json();
-  pokeCache[id] = { id, name: d.name, sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`, types: d.types.map(t => t.type.name) };
-  return pokeCache[id];
-}
-
-async function nextPokemon() {
-  if (activePool.length === 0 || busy) return;
-  busy = true;
-  setButtonsDisabled(true);
-  const id = rand(activePool);
-  currentId = id;
-  const card = document.getElementById('poke-card');
-  card.style.display = 'flex';
-  card.classList.remove('voted-smash', 'voted-pass');
-  document.getElementById('btn-row').style.display = 'flex';
-  document.getElementById('skip-btn').style.display = 'inline-block';
-  document.getElementById('session-stats').style.display = 'flex';
-  document.getElementById('loading-overlay').style.display = 'none';
-
-  const img = document.getElementById('poke-img');
-  img.classList.add('loading');
-  document.getElementById('poke-name').textContent = '…';
-  document.getElementById('poke-num').textContent = '';
-  document.getElementById('type-row').innerHTML = '';
-
   try {
-    const p = await fetchPoke(id);
-    if (currentId !== id) { busy = false; return; }
-    img.src = p.sprite;
-    img.onload = () => img.classList.remove('loading');
-    img.onerror = () => img.classList.remove('loading');
-    document.getElementById('poke-name').textContent = p.name.replace(/-/g, ' ');
-    document.getElementById('poke-num').textContent = `#${String(id).padStart(4, '0')}`;
-    const tr = document.getElementById('type-row');
-    p.types.forEach(t => {
-      const [bg, fg] = TYPE_STYLES[t] || ['#27272a', '#d4d4d8'];
-      const pill = document.createElement('span');
-      pill.className = 'type-pill';
-      pill.style.background = bg; pill.style.color = fg;
-      pill.textContent = t;
-      tr.appendChild(pill);
-    });
-  } catch(e) {
-    document.getElementById('poke-name').textContent = `#${id}`;
-  }
-  setButtonsDisabled(false);
-  busy = false;
-}
-
-function setButtonsDisabled(v) {
-  document.getElementById('btn-smash').disabled = v;
-  document.getElementById('btn-pass').disabled = v;
-}
-
-async function vote(choice) {
-  if (!currentId || busy) return;
-  const id = currentId;
-  const card = document.getElementById('poke-card');
-  card.classList.add(`voted-${choice}`);
-
-  if (choice === 'smash') sSmash++; else sPass++;
-  sSeen++;
-  document.getElementById('s-smash').textContent = sSmash;
-  document.getElementById('s-pass').textContent = sPass;
-  document.getElementById('s-seen').textContent = sSeen;
-
-  const glow = document.getElementById('bg-glow');
-  if (glow) {
-    glow.style.background = choice === 'smash' ? 'rgba(34,197,94,0.07)' : 'rgba(239,68,68,0.07)';
-  }
-
-  if (!globalVotes[id]) globalVotes[id] = { smash: 0, pass: 0, name: '', sprite: '' };
-  globalVotes[id][choice]++;
-  globalVotes[id].name = document.getElementById('poke-name').textContent;
-  globalVotes[id].sprite = document.getElementById('poke-img').src;
-
-  saveVotes(id, choice);
-  renderTierList();
-
-  const gs = document.getElementById('g-smash'), gp = document.getElementById('g-pass');
-  gs.textContent = Object.values(globalVotes).reduce((a,v)=>a+v.smash,0);
-  gp.textContent = Object.values(globalVotes).reduce((a,v)=>a+v.pass,0);
-
-  setTimeout(() => nextPokemon(), 280);
-}
-
-async function saveVotes(id, choice) {
-  try {
-    await fetch('/api/vote', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, choice, name: globalVotes[id].name, sprite: globalVotes[id].sprite })
-    });
-  } catch(e) {
-    // Server not available — votes stored in memory only (local/static mode)
+    const r = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+    const d = await r.json();
+    pokeCache[id] = {
+      id,
+      name: d.name,
+      sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`,
+      types: d.types.map(t => t.type.name),
+    };
+    return pokeCache[id];
+  } catch (e) {
+    return { id, name: `pokemon-${id}`, sprite: '', types: [] };
   }
 }
 
-async function loadVotes() {
+function createStore(initial) {
+  let state = initial;
+  const subs = new Set();
+  return {
+    get: () => state,
+    set: (patch) => {
+      state = typeof patch === 'function' ? patch(state) : { ...state, ...patch };
+      subs.forEach(fn => fn(state));
+    },
+    subscribe: (fn) => { subs.add(fn); return () => subs.delete(fn); },
+  };
+}
+
+const SOPStore = createStore({
+  checkedGens: new Set(GENS.map((_, i) => i)),
+  current: null,
+  loading: true,
+  voteEvent: null,
+  voteSeq: 0,
+  sSmash: 0,
+  sPass: 0,
+  sSeen: 0,
+  globalVotes: {},
+  skipSeq: 0,
+});
+
+function getPool() {
+  const { checkedGens } = SOPStore.get();
+  const pool = [];
+  checkedGens.forEach(i => {
+    const [lo, hi] = GENS[i].range;
+    for (let id = lo; id <= hi; id++) pool.push(id);
+  });
+  return pool;
+}
+
+let advancing = false;
+async function advance() {
+  if (advancing) return;
+  advancing = true;
+  const pool = getPool();
+  if (pool.length === 0) {
+    SOPStore.set({ current: null, loading: false });
+    advancing = false;
+    return;
+  }
+  const id = pool[Math.floor(Math.random() * pool.length)];
+  SOPStore.set({ loading: true });
+  const poke = await fetchPoke(id);
+  SOPStore.set({ current: poke, loading: false });
+  advancing = false;
+}
+
+function toggleGen(i, checked) {
+  const s = SOPStore.get();
+  const next = new Set(s.checkedGens);
+  if (checked) next.add(i); else next.delete(i);
+  SOPStore.set({ checkedGens: next });
+}
+
+function toggleAllGens(checked) {
+  SOPStore.set({ checkedGens: checked ? new Set(GENS.map((_, i) => i)) : new Set() });
+}
+
+function vote(choice) {
+  const s = SOPStore.get();
+  if (!s.current) return;
+  const id = s.current.id;
+  const patch = {
+    voteEvent: { id, choice, ts: Date.now() },
+    voteSeq: s.voteSeq + 1,
+    sSeen: s.sSeen + 1,
+  };
+  if (choice === 'smash') patch.sSmash = s.sSmash + 1;
+  if (choice === 'pass') patch.sPass = s.sPass + 1;
+  const gv = { ...s.globalVotes };
+  if (!gv[id]) gv[id] = { smash: 0, pass: 0, name: s.current.name, sprite: s.current.sprite };
+  gv[id] = { ...gv[id], [choice]: gv[id][choice] + 1, name: s.current.name, sprite: s.current.sprite };
+  patch.globalVotes = gv;
+  SOPStore.set(patch);
+
+  playSfx(choice);
+
+  fetch('/api/vote', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, choice, name: s.current.name, sprite: s.current.sprite }),
+  }).catch(() => {});
+
+  setTimeout(() => advance(), 1300);
+}
+
+function skip() {
+  const s = SOPStore.get();
+  SOPStore.set({ skipSeq: s.skipSeq + 1 });
+  playSfx('skip');
+  advance();
+}
+
+async function loadGlobalVotes() {
   try {
     const r = await fetch('/api/votes');
     if (r.ok) {
-      globalVotes = await r.json();
-      const gs = document.getElementById('g-smash'), gp = document.getElementById('g-pass');
-      gs.textContent = Object.values(globalVotes).reduce((a,v)=>a+v.smash,0);
-      gp.textContent = Object.values(globalVotes).reduce((a,v)=>a+v.pass,0);
-      renderTierList();
+      const data = await r.json();
+      SOPStore.set({ globalVotes: data });
     }
-  } catch(e) {}
+  } catch (e) {}
 }
 
-function renderTierList() {
-  const entries = Object.entries(globalVotes)
-    .map(([id, v]) => ({ id, ...v }))
-    .filter(e => (e.smash + e.pass) > 0);
-
-  const bySmash = [...entries].sort((a,b) => b.smash - a.smash).slice(0, 10);
-  const byPass  = [...entries].sort((a,b) => b.pass  - a.pass ).slice(0, 10);
-
-  renderBoard('tier-smash', bySmash, 'smash');
-  renderBoard('tier-pass',  byPass,  'pass');
+function useSOP() {
+  const [, force] = React.useReducer(x => x + 1, 0);
+  React.useEffect(() => SOPStore.subscribe(force), []);
+  return SOPStore.get();
 }
 
-function renderBoard(containerId, entries, mode) {
-  const el = document.getElementById(containerId);
-  if (entries.length === 0) { el.innerHTML = '<div id="tier-empty">Vote to see rankings</div>'; return; }
-  const maxVal = entries[0][mode] || 1;
-  el.innerHTML = '';
-  entries.forEach((e, idx) => {
-    const rankClass = idx === 0 ? 'gold' : idx === 1 ? 'silver' : idx === 2 ? 'bronze' : '';
-    const barColor = mode === 'smash' ? '#22c55e' : '#ef4444';
-    const pct = Math.round((e[mode] / maxVal) * 100);
-    const div = document.createElement('div');
-    div.className = 'tier-item';
-    div.innerHTML = `
-      <div class="tier-rank ${rankClass}">${idx + 1}</div>
-      <img class="tier-img" src="${e.sprite}" alt="${e.name}" loading="lazy">
-      <div class="tier-meta">
-        <div class="tier-name">${e.name}</div>
-        <div class="tier-bar-wrap"><div class="tier-bar" style="width:${pct}%;background:${barColor}"></div></div>
+let lastGenSig = '';
+SOPStore.subscribe((s) => {
+  const sig = [...s.checkedGens].sort().join(',');
+  if (sig !== lastGenSig) {
+    lastGenSig = sig;
+    const pool = getPool();
+    if (pool.length > 0 && !s.current && !s.loading) advance();
+  }
+});
+
+loadGlobalVotes();
+advance();
+
+Object.assign(window, {
+  GENS, useSOP, SOPStore, vote, skip, toggleGen, toggleAllGens, playSfx, fetchPoke,
+});
+
+
+// ===== js/effects.jsx =====
+
+const ENTRY_TIMINGS = {
+  drop:    [0,    220],
+  wobble:  [220,  900],
+  flash:   [900,  1100],
+  reveal:  [1100, 1500],
+};
+const ENTRY_TOTAL = 1500;
+const VOTE_DURATION = 1300;
+
+function useEntryPhase(currentId) {
+  const [phase, setPhase] = React.useState('idle');
+  const [seq, setSeq] = React.useState(0);
+
+  React.useEffect(() => {
+    if (currentId == null) { setPhase('idle'); return; }
+    setSeq(s => s + 1);
+    setPhase('drop');
+    const timers = [
+      setTimeout(() => setPhase('wobble'), ENTRY_TIMINGS.wobble[0]),
+      setTimeout(() => setPhase('flash'),  ENTRY_TIMINGS.flash[0]),
+      setTimeout(() => setPhase('reveal'), ENTRY_TIMINGS.reveal[0]),
+      setTimeout(() => setPhase('idle'),   ENTRY_TOTAL),
+    ];
+    playSfx('entry');
+    return () => timers.forEach(clearTimeout);
+  }, [currentId]);
+
+  return { phase, seq };
+}
+
+function useVoteAnim() {
+  const { voteEvent, voteSeq } = useSOP();
+  const [active, setActive] = React.useState(false);
+  const [choice, setChoice] = React.useState(null);
+
+  React.useEffect(() => {
+    if (!voteEvent) return;
+    setActive(true);
+    setChoice(voteEvent.choice);
+    const t = setTimeout(() => setActive(false), VOTE_DURATION);
+    return () => clearTimeout(t);
+  }, [voteSeq]);
+
+  return { active, choice };
+}
+
+function SparkleBurst({ active }) {
+  const particles = React.useMemo(() => {
+    return Array.from({ length: 18 }, (_, i) => ({
+      id: i,
+      x: 50 + (Math.random() - 0.5) * 80,
+      delay: Math.random() * 200,
+      duration: 700 + Math.random() * 500,
+      size: 6 + Math.random() * 8,
+      hue: 45 + Math.random() * 15,
+    }));
+  }, [active]);
+
+  if (!active) return null;
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 8,
+    }}>
+      {particles.map(p => (
+        <div key={p.id} style={{
+          position: 'absolute',
+          left: `${p.x}%`,
+          bottom: '20%',
+          width: p.size,
+          height: p.size,
+          background: `oklch(0.85 0.18 ${p.hue})`,
+          boxShadow: `0 0 ${p.size}px oklch(0.85 0.2 ${p.hue})`,
+          transform: 'rotate(45deg)',
+          animation: `sopSparkle ${p.duration}ms ease-out ${p.delay}ms forwards`,
+          opacity: 0,
+        }} />
+      ))}
+    </div>
+  );
+}
+
+function LevelUpFlash({ active, color = '#facc15' }) {
+  if (!active) return null;
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 7,
+      animation: 'sopFlash 280ms ease-out',
+      background: `radial-gradient(circle at center, ${color}33 0%, transparent 60%)`,
+    }} />
+  );
+}
+
+function FaintStars({ active }) {
+  if (!active) return null;
+  const stars = [0, 1, 2, 3, 4];
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 8,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      <div style={{ position: 'relative', width: 0, height: 0, animation: 'sopOrbit 1.1s linear' }}>
+        {stars.map(i => (
+          <div key={i} style={{
+            position: 'absolute',
+            transform: `rotate(${i * 72}deg) translate(60px) rotate(${-i * 72}deg)`,
+          }}>
+            <Star size={24} />
+          </div>
+        ))}
       </div>
-      <div class="tier-count ${mode}">${e[mode]}</div>`;
-    el.appendChild(div);
+    </div>
+  );
+}
+
+function Star({ size = 18, color = '#fde047', stroke = '#854d0e' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'block' }}>
+      <path d="M12 1.5l3 7.2 7.7.6-5.85 5 1.8 7.5L12 17.9 5.35 21.8l1.8-7.5L1.3 9.3 9 8.7z"
+        fill={color} stroke={stroke} strokeWidth="1.4" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+if (!document.getElementById('sop-anim-styles')) {
+  const s = document.createElement('style');
+  s.id = 'sop-anim-styles';
+  s.textContent = `
+    @keyframes sopSparkle {
+      0%   { transform: translate(0, 0) rotate(45deg) scale(0.4); opacity: 0; }
+      20%  { opacity: 1; }
+      100% { transform: translate(0, -160px) rotate(225deg) scale(1.2); opacity: 0; }
+    }
+    @keyframes sopFlash {
+      0%   { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    @keyframes sopOrbit {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+    @keyframes sopDrop {
+      from { transform: translateY(-260px) scale(0.7); }
+      to   { transform: translateY(0) scale(1); }
+    }
+    @keyframes sopWobble {
+      0%   { transform: translateY(0) rotate(0deg); }
+      15%  { transform: translateY(-6px) rotate(-14deg); }
+      30%  { transform: translateY(0)    rotate(0deg); }
+      45%  { transform: translateY(-6px) rotate(14deg); }
+      60%  { transform: translateY(0)    rotate(0deg); }
+      75%  { transform: translateY(-6px) rotate(-12deg); }
+      100% { transform: translateY(0)    rotate(0deg); }
+    }
+    @keyframes sopCapsuleOpenTop {
+      0%   { transform: translateY(0) rotate(0); opacity: 1; }
+      100% { transform: translateY(-100px) rotate(-30deg); opacity: 0; }
+    }
+    @keyframes sopCapsuleOpenBot {
+      0%   { transform: translateY(0) rotate(0); opacity: 1; }
+      100% { transform: translateY(80px) rotate(30deg); opacity: 0; }
+    }
+    @keyframes sopReveal {
+      0%   { transform: scale(0); opacity: 0; }
+      55%  { transform: scale(1.18); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes sopWhiteFlash {
+      0%, 100% { opacity: 0; }
+      50%      { opacity: 1; }
+    }
+    @keyframes sopSmashPulse {
+      0%, 100% { transform: scale(1); filter: brightness(1); }
+      40%      { transform: scale(1.15); filter: brightness(1.6) drop-shadow(0 0 12px gold); }
+    }
+    @keyframes sopFaintSpiral {
+      0%   { transform: translateY(0) rotate(0deg) scale(1); filter: grayscale(0); }
+      30%  { transform: translateY(-10px) rotate(360deg) scale(0.95); filter: grayscale(0.6); }
+      100% { transform: translateY(160px) rotate(1440deg) scale(0.2); filter: grayscale(1) brightness(0.5); opacity: 0; }
+    }
+    @keyframes sopFloatIdle {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-6px); }
+    }
+  `;
+  document.head.appendChild(s);
+}
+
+Object.assign(window, {
+  useEntryPhase, useVoteAnim, SparkleBurst, LevelUpFlash, FaintStars, Star,
+  ENTRY_TIMINGS, ENTRY_TOTAL, VOTE_DURATION,
+});
+
+
+// ===== js/shared-components.jsx =====
+
+function CreatureStage({ current, phase, voteActive, choice, palette, Capsule, pixelated, height = 180, spriteSize = 150, spriteFilter = '' }) {
+  const showCapsule = phase === 'drop' || phase === 'wobble' || phase === 'flash';
+  const showCreature = phase === 'reveal' || phase === 'idle';
+
+  let creatureAnim = '';
+  let creatureStyle = {};
+  if (voteActive && choice === 'smash') {
+    creatureAnim = 'sopSmashPulse 600ms ease-out';
+  } else if (voteActive && choice === 'pass') {
+    creatureAnim = 'sopFaintSpiral 1100ms ease-in forwards';
+  } else if (phase === 'reveal') {
+    creatureAnim = 'sopReveal 380ms cubic-bezier(.4,1.6,.6,1) forwards';
+  } else if (phase === 'idle') {
+    creatureAnim = 'sopFloatIdle 2.4s ease-in-out infinite';
+  }
+
+  return (
+    <div style={{
+      position: 'relative', width: '100%', height,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      {showCapsule && (
+        <div style={{ position: 'absolute' }}>
+          <Capsule phase={phase} />
+        </div>
+      )}
+      {showCreature && current?.sprite && (
+        <img
+          key={`${current.id}-${voteActive ? choice : 'idle'}`}
+          src={current.sprite}
+          alt={current.name}
+          style={{
+            width: spriteSize, height: spriteSize,
+            imageRendering: pixelated ? 'pixelated' : 'auto',
+            filter: spriteFilter,
+            animation: creatureAnim,
+            ...creatureStyle,
+          }}
+        />
+      )}
+      {(phase === 'flash' || (voteActive && choice === 'smash')) && (
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: voteActive ? 'radial-gradient(circle, gold 0%, transparent 70%)' : 'white',
+          animation: 'sopWhiteFlash 280ms ease-out',
+          pointerEvents: 'none',
+        }} />
+      )}
+      <SparkleBurst active={voteActive && choice === 'smash'} />
+      <FaintStars active={voteActive && choice === 'pass'} />
+    </div>
+  );
+}
+
+function Leaderboard({ mode, votes, palette, pixelated, max = 5 }) {
+  const entries = Object.entries(votes)
+    .map(([id, v]) => ({ id, ...v }))
+    .filter(e => (e.smash + e.pass) > 0)
+    .sort((a, b) => b[mode] - a[mode])
+    .slice(0, max);
+
+  if (entries.length === 0) {
+    return <div style={{ fontSize: 9, color: palette.muted || palette.ink, padding: '14px 4px', opacity: 0.7 }}>
+      No votes yet
+    </div>;
+  }
+
+  const maxVal = entries[0][mode] || 1;
+  const barColor = mode === 'smash' ? (palette.smash || palette.black) : (palette.pass || palette.ink);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {entries.map((e, i) => {
+        const pct = Math.round((e[mode] / maxVal) * 100);
+        return (
+          <div key={e.id} style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            paddingBottom: 6, borderBottom: `1px solid ${palette.border || palette.ink}33`,
+          }}>
+            <div style={{
+              width: 14, textAlign: 'center', fontSize: 10,
+              color: i === 0 ? (palette.gold || '#f59e0b') : palette.muted || palette.ink,
+              fontWeight: 700,
+            }}>{i + 1}</div>
+            <img src={e.sprite} alt={e.name} style={{
+              width: 28, height: 28, imageRendering: pixelated ? 'pixelated' : 'auto', flexShrink: 0,
+            }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{
+                fontSize: 9, textTransform: 'capitalize',
+                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+              }}>{e.name.replace(/-/g, ' ')}</div>
+              <div style={{ height: 3, background: `${palette.border || palette.ink}25`, marginTop: 3, borderRadius: 1 }}>
+                <div style={{ height: '100%', width: `${pct}%`, background: barColor, borderRadius: 1, transition: 'width .4s' }} />
+              </div>
+            </div>
+            <div style={{ fontSize: 11, color: barColor, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{e[mode]}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+Object.assign(window, { CreatureStage, Leaderboard });
+
+
+// ===== js/theme-cartridge.jsx =====
+
+const DMG = {
+  bg:    '#9bbc0f',
+  bg2:   '#8bac0f',
+  ink:   '#306230',
+  black: '#0f380f',
+  shell: '#7d8d3a',
+};
+
+function CartridgeTheme() {
+  const s = useSOP();
+  const { current, loading, sSmash, sPass, sSeen, globalVotes, checkedGens } = s;
+  const { phase } = useEntryPhase(current?.id);
+  const { active: voteActive, choice } = useVoteAnim();
+
+  const gSmash = Object.values(globalVotes).reduce((a, v) => a + v.smash, 0);
+  const gPass = Object.values(globalVotes).reduce((a, v) => a + v.pass, 0);
+
+  return (
+    <div style={{
+      width: '100%', height: '100%', background: DMG.bg, color: DMG.black,
+      fontFamily: '"Press Start 2P", monospace', fontSize: 10, lineHeight: 1.6,
+      display: 'flex', flexDirection: 'column', overflow: 'hidden',
+      imageRendering: 'pixelated',
+    }}>
+      <div style={{
+        background: DMG.ink, color: DMG.bg, padding: '14px 18px',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        borderBottom: `4px solid ${DMG.black}`,
+      }}>
+        <div>
+          <div style={{ fontSize: 14, letterSpacing: 1 }}>POKé-RATE</div>
+          <div style={{ fontSize: 8, color: DMG.bg2, marginTop: 6, letterSpacing: 1 }}>VER. 1988 · GLOBAL DATA</div>
+        </div>
+        <div style={{ display: 'flex', gap: 14 }}>
+          <CartCount label="SMASH" val={gSmash} />
+          <CartCount label="PASS" val={gPass} />
+        </div>
+      </div>
+
+      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '180px 1fr 210px', overflow: 'hidden' }}>
+        <div style={{ borderRight: `4px solid ${DMG.black}`, background: DMG.bg2, padding: 14, overflow: 'auto' }}>
+          <div style={{ fontSize: 10, color: DMG.black, marginBottom: 12 }}>►GAMES</div>
+          <CartCheckbox
+            label="ALL"
+            checked={checkedGens.size === GENS.length}
+            indeterminate={checkedGens.size > 0 && checkedGens.size < GENS.length}
+            onChange={(c) => toggleAllGens(c)}
+          />
+          <div style={{ height: 1, background: DMG.ink, margin: '10px 0', opacity: 0.35 }} />
+          {GENS.map((g, i) => (
+            <CartCheckbox
+              key={i}
+              label={g.label.replace('Gen ', 'G').replace(' · ', ' ').toUpperCase()}
+              sub={g.sub}
+              checked={checkedGens.has(i)}
+              onChange={(c) => toggleGen(i, c)}
+            />
+          ))}
+        </div>
+
+        <div style={{
+          position: 'relative', display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center', padding: 18, gap: 16,
+          background: `repeating-linear-gradient(0deg, ${DMG.bg} 0 3px, ${DMG.bg2} 3px 4px)`,
+        }}>
+          <div style={{
+            position: 'absolute', inset: 12,
+            border: `4px solid ${DMG.black}`,
+            boxShadow: `inset 0 0 0 4px ${DMG.bg}, inset 0 0 0 8px ${DMG.ink}`,
+            pointerEvents: 'none',
+          }} />
+
+          <div style={{ position: 'relative', zIndex: 1, width: 280, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+            <CreatureStage
+              current={current}
+              phase={phase}
+              voteActive={voteActive}
+              choice={choice}
+              palette={DMG}
+              Capsule={DMGCapsule}
+              pixelated
+              spriteFilter="contrast(1.1) saturate(0) sepia(0.85) hue-rotate(40deg) brightness(0.85)"
+            />
+            {current && (phase === 'idle' || phase === 'reveal') && (
+              <>
+                <div style={{ fontSize: 8, color: DMG.ink, marginTop: -4 }}>NO. {String(current.id).padStart(3, '0')}</div>
+                <div style={{ fontSize: 16, letterSpacing: 1, textTransform: 'uppercase' }}>{current.name.replace(/-/g, ' ')}</div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {current.types.map(t => (
+                    <span key={t} style={{
+                      fontSize: 8, padding: '4px 8px',
+                      background: DMG.ink, color: DMG.bg, letterSpacing: 1,
+                      border: `2px solid ${DMG.black}`,
+                    }}>{t.toUpperCase()}</span>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {!current && !loading && (
+              <div style={{ fontSize: 10, color: DMG.ink, textAlign: 'center', padding: 40 }}>
+                SELECT A GAME ►
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+              <CartButton onClick={() => vote('pass')} bg={DMG.ink} disabled={!current || phase !== 'idle'}>► PASS</CartButton>
+              <CartButton onClick={() => vote('smash')} bg={DMG.black} disabled={!current || phase !== 'idle'}>► SMASH</CartButton>
+            </div>
+            <button onClick={skip} style={{
+              fontFamily: 'inherit', fontSize: 8, background: 'transparent',
+              border: `2px solid ${DMG.ink}`, color: DMG.ink, padding: '6px 14px',
+              cursor: 'pointer', letterSpacing: 1,
+            }}>SKIP ▷</button>
+          </div>
+        </div>
+
+        <div style={{ borderLeft: `4px solid ${DMG.black}`, background: DMG.bg2, padding: 14, overflow: 'auto' }}>
+          <div style={{ fontSize: 10, marginBottom: 12 }}>►TOP RATED</div>
+          <Leaderboard mode="smash" votes={globalVotes} palette={DMG} pixelated />
+          <div style={{ height: 12 }} />
+          <div style={{ fontSize: 10, marginBottom: 8 }}>►WORST RATED</div>
+          <Leaderboard mode="pass" votes={globalVotes} palette={DMG} pixelated />
+        </div>
+      </div>
+
+      <div style={{
+        background: DMG.ink, color: DMG.bg, padding: '8px 14px',
+        display: 'flex', justifyContent: 'space-around', alignItems: 'center',
+        borderTop: `4px solid ${DMG.black}`, fontSize: 8, letterSpacing: 1,
+      }}>
+        <span>SESSION:</span>
+        <span>SMASHED <b style={{ color: '#9bbc0f' }}>{sSmash}</b></span>
+        <span>SEEN <b>{sSeen}</b></span>
+        <span>PASSED <b>{sPass}</b></span>
+      </div>
+    </div>
+  );
+}
+
+function CartCount({ label, val }) {
+  return (
+    <div style={{ textAlign: 'right' }}>
+      <div style={{ fontSize: 14 }}>{val}</div>
+      <div style={{ fontSize: 7, marginTop: 4, color: DMG.bg2 }}>{label}</div>
+    </div>
+  );
+}
+
+function CartCheckbox({ label, sub, checked, indeterminate, onChange }) {
+  const boxRef = React.useRef();
+  React.useEffect(() => { if (boxRef.current) boxRef.current.indeterminate = !!indeterminate; }, [indeterminate]);
+  return (
+    <label style={{
+      display: 'block', cursor: 'pointer', marginBottom: 6, fontSize: 9,
+      color: DMG.black, userSelect: 'none',
+    }}>
+      <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{
+          width: 14, height: 14, border: `2px solid ${DMG.black}`, background: DMG.bg,
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        }}>
+          {checked && !indeterminate && <span style={{ width: 6, height: 6, background: DMG.black }} />}
+          {indeterminate && <span style={{ width: 6, height: 2, background: DMG.black }} />}
+        </span>
+        <input type="checkbox" ref={boxRef} checked={checked} onChange={(e) => onChange(e.target.checked)}
+          style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }} />
+        <span>{label}</span>
+      </span>
+      {sub && <div style={{ fontSize: 7, color: DMG.ink, marginLeft: 22, marginTop: 3, letterSpacing: 1 }}>{sub}</div>}
+    </label>
+  );
+}
+
+function CartButton({ children, onClick, disabled, bg }) {
+  return (
+    <button onClick={onClick} disabled={disabled} style={{
+      fontFamily: 'inherit', fontSize: 12, letterSpacing: 1,
+      padding: '12px 16px',
+      background: bg, color: DMG.bg,
+      border: `3px solid ${DMG.black}`,
+      boxShadow: disabled ? 'none' : `4px 4px 0 ${DMG.black}`,
+      cursor: disabled ? 'not-allowed' : 'pointer',
+      opacity: disabled ? 0.5 : 1,
+      transform: 'translate(0,0)',
+      transition: 'transform .08s, box-shadow .08s',
+    }}
+    onMouseDown={e => { if (disabled) return; e.currentTarget.style.transform = 'translate(2px,2px)'; e.currentTarget.style.boxShadow = `2px 2px 0 ${DMG.black}`; }}
+    onMouseUp={e => { if (disabled) return; e.currentTarget.style.transform = 'translate(0,0)'; e.currentTarget.style.boxShadow = `4px 4px 0 ${DMG.black}`; }}
+    onMouseLeave={e => { if (disabled) return; e.currentTarget.style.transform = 'translate(0,0)'; e.currentTarget.style.boxShadow = `4px 4px 0 ${DMG.black}`; }}
+    >{children}</button>
+  );
+}
+
+function DMGCapsule({ phase }) {
+  const open = phase === 'flash';
+  const wobbling = phase === 'wobble';
+  const dropping = phase === 'drop';
+  return (
+    <div style={{
+      width: 80, height: 80, position: 'relative',
+      animation:
+        dropping ? 'sopDrop 220ms steps(4, end) forwards' :
+        wobbling ? 'sopWobble 680ms steps(8, end)' :
+        'none',
+    }}>
+      <div style={{
+        position: 'absolute', left: 8, top: 4, width: 64, height: 32,
+        background: DMG.ink,
+        boxShadow: `inset -4px 0 0 ${DMG.black}, inset 4px 4px 0 ${DMG.bg2}`,
+        border: `3px solid ${DMG.black}`,
+        animation: open ? 'sopCapsuleOpenTop 200ms ease-out forwards' : 'none',
+      }} />
+      <div style={{
+        position: 'absolute', left: 8, top: 44, width: 64, height: 32,
+        background: DMG.bg,
+        boxShadow: `inset -4px 0 0 ${DMG.ink}, inset 4px 4px 0 ${DMG.bg2}`,
+        border: `3px solid ${DMG.black}`,
+        animation: open ? 'sopCapsuleOpenBot 200ms ease-out forwards' : 'none',
+      }} />
+      <div style={{
+        position: 'absolute', left: 32, top: 32, width: 16, height: 16,
+        background: DMG.bg2,
+        border: `3px solid ${DMG.black}`,
+      }} />
+    </div>
+  );
+}
+
+window.CartridgeTheme = CartridgeTheme;
+
+
+// ===== js/theme-foil.jsx =====
+
+const FOIL = {
+  bg:      '#1e1e2c',
+  surface: '#fbf6e7',
+  surface2:'#f3e9c4',
+  gold:    '#c8a14c',
+  goldHi:  '#f3d27a',
+  ink:     '#23202b',
+  muted:   '#6d6453',
+  smash:   '#d33d49',
+  pass:    '#4a3a8a',
+  border:  '#c8a14c',
+};
+
+function FoilTheme() {
+  const s = useSOP();
+  const { current, loading, sSmash, sPass, sSeen, globalVotes, checkedGens } = s;
+  const { phase } = useEntryPhase(current?.id);
+  const { active: voteActive, choice } = useVoteAnim();
+
+  const gSmash = Object.values(globalVotes).reduce((a, v) => a + v.smash, 0);
+  const gPass = Object.values(globalVotes).reduce((a, v) => a + v.pass, 0);
+
+  const typePalette = {
+    fire: '#ef6c4a', water: '#3aa1d3', grass: '#5fb35d', electric: '#e9c531',
+    psychic: '#d75aa4', ice: '#7ad3d7', dragon: '#7866b8', dark: '#3d3540',
+    fairy: '#e3a7c8', normal: '#9d9582', fighting: '#b85c3a', flying: '#8aaee8',
+    poison: '#9b59c1', ground: '#c9a05c', rock: '#998264', bug: '#8ab148',
+    ghost: '#6a5a93', steel: '#8a96a3',
+  };
+
+  return (
+    <div style={{
+      width: '100%', height: '100%',
+      background: `
+        radial-gradient(ellipse at 20% 0%, #2a2547 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, #3a1f3f 0%, transparent 50%),
+        ${FOIL.bg}
+      `,
+      color: FOIL.surface, fontFamily: '"Inter", system-ui, sans-serif',
+      display: 'flex', flexDirection: 'column', overflow: 'hidden',
+    }}>
+      <div style={{
+        padding: '14px 22px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        borderBottom: `1px solid ${FOIL.gold}40`,
+        background: `linear-gradient(180deg, ${FOIL.bg} 0%, transparent 100%)`,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <FoilDiamond />
+          <div>
+            <div style={{
+              fontFamily: '"Anton", "Bebas Neue", Impact, sans-serif',
+              fontSize: 26, letterSpacing: 2,
+              background: `linear-gradient(135deg, ${FOIL.goldHi}, ${FOIL.gold}, ${FOIL.goldHi})`,
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            }}>HOLO-RATE 1ST EDITION</div>
+            <div style={{ fontSize: 10, color: FOIL.muted, letterSpacing: 2, marginTop: 2 }}>RATE EVERY CREATURE · COLLECT THE DATA</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 18 }}>
+          <FoilStat label="SMASHES" val={gSmash} accent={FOIL.smash} />
+          <FoilStat label="PASSES" val={gPass} accent={FOIL.pass} />
+        </div>
+      </div>
+
+      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '190px 1fr 220px', overflow: 'hidden' }}>
+        <div style={{
+          borderRight: `1px solid ${FOIL.gold}30`, padding: '20px 16px', overflow: 'auto',
+        }}>
+          <FoilHeading>SET FILTER</FoilHeading>
+          <FoilCheck
+            label="ALL SETS"
+            checked={checkedGens.size === GENS.length}
+            indeterminate={checkedGens.size > 0 && checkedGens.size < GENS.length}
+            onChange={(c) => toggleAllGens(c)}
+          />
+          <div style={{ height: 1, background: `${FOIL.gold}30`, margin: '12px 0' }} />
+          {GENS.map((g, i) => (
+            <FoilCheck
+              key={i}
+              label={g.label}
+              sub={g.sub}
+              checked={checkedGens.has(i)}
+              onChange={(c) => toggleGen(i, c)}
+            />
+          ))}
+        </div>
+
+        <div style={{
+          position: 'relative', display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center', padding: 18, gap: 14,
+          background: `radial-gradient(circle at center, ${FOIL.gold}10 0%, transparent 60%)`,
+        }}>
+          <div style={{
+            width: 280, padding: '10px 10px 18px',
+            background: `
+              conic-gradient(from 210deg at 50% 50%,
+                #f9efc8 0deg, #fbecc9 30deg, #f5dcb7 60deg, #ead2a2 90deg,
+                #f9efc8 130deg, #fbecc9 180deg, #f5dcb7 220deg, #ead2a2 280deg,
+                #f9efc8 360deg)
+            `,
+            borderRadius: 12,
+            boxShadow: `
+              0 0 0 2px ${FOIL.gold},
+              0 0 0 4px ${FOIL.ink},
+              0 0 0 5px ${FOIL.goldHi},
+              0 12px 36px rgba(0,0,0,0.5),
+              inset 0 0 0 1px ${FOIL.goldHi}
+            `,
+            position: 'relative', zIndex: 1,
+          }}>
+            <div style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              background: `linear-gradient(90deg, ${FOIL.goldHi}, ${FOIL.gold})`,
+              padding: '6px 12px', borderRadius: 4,
+              border: `1px solid ${FOIL.ink}`,
+              color: FOIL.ink, fontFamily: '"Anton", Impact, sans-serif',
+              letterSpacing: 1,
+            }}>
+              <span style={{ fontSize: 14, textTransform: 'uppercase' }}>
+                {current ? current.name.replace(/-/g, ' ') : '— — —'}
+              </span>
+              <span style={{ fontSize: 10 }}>{current ? `#${String(current.id).padStart(3, '0')}` : ''}</span>
+            </div>
+
+            <div style={{
+              marginTop: 10, padding: 6,
+              background: `linear-gradient(180deg, #fff9e0, #f6e8b8)`,
+              border: `2px solid ${FOIL.gold}`,
+              boxShadow: `inset 0 0 0 1px ${FOIL.ink}, inset 0 2px 8px ${FOIL.gold}30`,
+              borderRadius: 4,
+              position: 'relative', overflow: 'hidden',
+            }}>
+              <div style={{
+                position: 'absolute', inset: 0, pointerEvents: 'none',
+                background: `linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.35) 50%, transparent 70%)`,
+                animation: 'foilShine 4s linear infinite',
+                mixBlendMode: 'overlay',
+              }} />
+              <CreatureStage
+                current={current}
+                phase={phase}
+                voteActive={voteActive}
+                choice={choice}
+                palette={FOIL}
+                Capsule={FoilCapsule}
+                pixelated
+                spriteFilter="drop-shadow(0 4px 6px rgba(0,0,0,0.25))"
+                height={170}
+                spriteSize={140}
+              />
+            </div>
+
+            <div style={{ marginTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: 5 }}>
+                {current?.types.map(t => (
+                  <span key={t} title={t} style={{
+                    width: 22, height: 22, borderRadius: '50%',
+                    background: typePalette[t] || '#888',
+                    border: `2px solid ${FOIL.ink}`,
+                    boxShadow: `inset 0 -2px 0 rgba(0,0,0,0.2), 0 1px 3px rgba(0,0,0,0.4)`,
+                  }} />
+                ))}
+              </div>
+              <div style={{ fontSize: 8, color: FOIL.muted, fontStyle: 'italic', letterSpacing: 1 }}>
+                ILLUS. SPRITE WORKS
+              </div>
+            </div>
+          </div>
+
+          {!current && !loading && (
+            <div style={{ color: FOIL.muted, padding: 20 }}>Select a set to begin</div>
+          )}
+
+          <div style={{ display: 'flex', gap: 12, width: 280, marginTop: 6 }}>
+            <FoilButton onClick={() => vote('pass')} bg={FOIL.pass} disabled={!current || phase !== 'idle'}>Pass</FoilButton>
+            <FoilButton onClick={() => vote('smash')} bg={FOIL.smash} disabled={!current || phase !== 'idle'}>Smash</FoilButton>
+          </div>
+          <button onClick={skip} style={{
+            background: 'transparent', border: `1px solid ${FOIL.gold}55`,
+            color: FOIL.muted, padding: '5px 16px', borderRadius: 99, cursor: 'pointer',
+            fontSize: 11, letterSpacing: 1,
+          }}>Skip →</button>
+        </div>
+
+        <div style={{ borderLeft: `1px solid ${FOIL.gold}30`, padding: '20px 16px', overflow: 'auto' }}>
+          <FoilHeading>MOST SMASHED</FoilHeading>
+          <Leaderboard mode="smash" votes={globalVotes} palette={{...FOIL, smash: FOIL.smash, muted: FOIL.muted, border: FOIL.gold }} />
+          <div style={{ height: 12 }} />
+          <FoilHeading>MOST PASSED</FoilHeading>
+          <Leaderboard mode="pass" votes={globalVotes} palette={{...FOIL, pass: FOIL.pass, muted: FOIL.muted, border: FOIL.gold }} />
+        </div>
+      </div>
+
+      <div style={{
+        padding: '10px 22px', display: 'flex', justifyContent: 'space-around', alignItems: 'center',
+        borderTop: `1px solid ${FOIL.gold}40`, fontSize: 11, letterSpacing: 1, color: FOIL.muted,
+      }}>
+        <span style={{ color: FOIL.smash }}>SMASHED · {sSmash}</span>
+        <span style={{ color: FOIL.surface }}>SEEN · {sSeen}</span>
+        <span style={{ color: FOIL.pass }}>PASSED · {sPass}</span>
+      </div>
+
+      <style>{`
+        @keyframes foilShine { from { transform: translateX(-80%); } to { transform: translateX(80%); } }
+      `}</style>
+    </div>
+  );
+}
+
+function FoilHeading({ children }) {
+  return <div style={{
+    fontFamily: '"Anton", Impact, sans-serif', fontSize: 13, letterSpacing: 2,
+    color: FOIL.gold, marginBottom: 12,
+  }}>{children}</div>;
+}
+
+function FoilStat({ label, val, accent }) {
+  return (
+    <div style={{ textAlign: 'right' }}>
+      <div style={{
+        fontFamily: '"Anton", Impact, sans-serif', fontSize: 22, color: accent,
+        lineHeight: 1, letterSpacing: 1,
+      }}>{val.toLocaleString()}</div>
+      <div style={{ fontSize: 9, color: FOIL.muted, letterSpacing: 2, marginTop: 2 }}>{label}</div>
+    </div>
+  );
+}
+
+function FoilCheck({ label, sub, checked, indeterminate, onChange }) {
+  const ref = React.useRef();
+  React.useEffect(() => { if (ref.current) ref.current.indeterminate = !!indeterminate; }, [indeterminate]);
+  return (
+    <label style={{ display: 'block', cursor: 'pointer', marginBottom: 10, userSelect: 'none' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+        <span style={{
+          width: 16, height: 16, borderRadius: 3,
+          background: checked ? FOIL.gold : 'transparent',
+          border: `1.5px solid ${FOIL.gold}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0,
+        }}>
+          {checked && !indeterminate && <span style={{ color: FOIL.ink, fontSize: 11, fontWeight: 900 }}>✓</span>}
+          {indeterminate && <span style={{ width: 8, height: 2, background: FOIL.ink }} />}
+        </span>
+        <input type="checkbox" ref={ref} checked={checked} onChange={(e) => onChange(e.target.checked)}
+          style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }} />
+        <span style={{ fontSize: 12, color: FOIL.surface, fontWeight: 500 }}>{label}</span>
+      </div>
+      {sub && <div style={{ fontSize: 10, color: FOIL.muted, marginLeft: 25, marginTop: 2 }}>{sub}</div>}
+    </label>
+  );
+}
+
+function FoilButton({ children, onClick, disabled, bg }) {
+  return (
+    <button onClick={onClick} disabled={disabled} style={{
+      flex: 1, padding: '12px 0',
+      fontFamily: '"Anton", Impact, sans-serif',
+      fontSize: 18, letterSpacing: 2, textTransform: 'uppercase',
+      color: '#fff',
+      background: `linear-gradient(180deg, ${bg} 0%, ${bg} 50%, ${bg}cc 100%)`,
+      border: `1px solid ${FOIL.ink}`,
+      borderRadius: 8,
+      boxShadow: `inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -3px 0 rgba(0,0,0,0.25), 0 4px 0 ${FOIL.ink}, 0 6px 14px rgba(0,0,0,0.4)`,
+      cursor: disabled ? 'not-allowed' : 'pointer',
+      opacity: disabled ? 0.5 : 1,
+      transition: 'transform .08s, box-shadow .08s',
+    }}
+    onMouseDown={e => { if (disabled) return; e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = `inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -3px 0 rgba(0,0,0,0.25), 0 1px 0 ${FOIL.ink}, 0 2px 6px rgba(0,0,0,0.4)`; }}
+    onMouseUp={e => { if (disabled) return; e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = `inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -3px 0 rgba(0,0,0,0.25), 0 4px 0 ${FOIL.ink}, 0 6px 14px rgba(0,0,0,0.4)`; }}
+    onMouseLeave={e => { if (disabled) return; e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = `inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -3px 0 rgba(0,0,0,0.25), 0 4px 0 ${FOIL.ink}, 0 6px 14px rgba(0,0,0,0.4)`; }}
+    >{children}</button>
+  );
+}
+
+function FoilCapsule({ phase }) {
+  const open = phase === 'flash';
+  const wobbling = phase === 'wobble';
+  const dropping = phase === 'drop';
+  return (
+    <div style={{
+      width: 80, height: 80, position: 'relative',
+      animation:
+        dropping ? 'sopDrop 220ms cubic-bezier(.5,1.5,.5,1) forwards' :
+        wobbling ? 'sopWobble 680ms ease-in-out' :
+        'none',
+    }}>
+      <svg viewBox="0 0 80 80" width="80" height="80" style={{ overflow: 'visible' }}>
+        <defs>
+          <linearGradient id="foilOrbTop" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stopColor="#f3d27a" />
+            <stop offset="100%" stopColor="#c8a14c" />
+          </linearGradient>
+          <linearGradient id="foilOrbBot" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stopColor="#fbf6e7" />
+            <stop offset="100%" stopColor="#e3d5a7" />
+          </linearGradient>
+        </defs>
+        <g style={{ transformOrigin: '40px 40px', animation: open ? 'sopCapsuleOpenTop 220ms ease-out forwards' : 'none' }}>
+          <polygon points="20,40 28,16 52,16 60,40" fill="url(#foilOrbTop)" stroke="#23202b" strokeWidth="2" />
+          <polygon points="28,16 52,16 46,22 34,22" fill="rgba(255,255,255,0.4)" />
+        </g>
+        <g style={{ transformOrigin: '40px 40px', animation: open ? 'sopCapsuleOpenBot 220ms ease-out forwards' : 'none' }}>
+          <polygon points="20,40 60,40 52,64 28,64" fill="url(#foilOrbBot)" stroke="#23202b" strokeWidth="2" />
+          <polygon points="28,64 52,64 46,58 34,58" fill="rgba(0,0,0,0.1)" />
+        </g>
+        <circle cx="40" cy="40" r="6" fill="#23202b" stroke="#c8a14c" strokeWidth="2" />
+        <circle cx="38" cy="38" r="2" fill="#f3d27a" />
+      </svg>
+    </div>
+  );
+}
+
+function FoilDiamond() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 28 28">
+      <polygon points="14,2 26,14 14,26 2,14" fill="none" stroke={FOIL.gold} strokeWidth="2" />
+      <polygon points="14,7 21,14 14,21 7,14" fill={FOIL.goldHi} />
+      <polygon points="14,7 21,14 14,14" fill={FOIL.gold} />
+    </svg>
+  );
+}
+
+window.FoilTheme = FoilTheme;
+
+
+// ===== js/theme-dex.jsx =====
+
+const DEX = {
+  red:        '#d62828',
+  redDeep:    '#a01d1d',
+  redHi:      '#f25d5d',
+  surface:    '#f6f3ee',
+  surface2:   '#e8e3da',
+  panel:      '#1a1a1f',
+  panelHi:    '#2a2a32',
+  screen:     '#0b1018',
+  screenInk:  '#7fffd4',
+  screenDim:  '#3a6a5a',
+  text:       '#1a1a1f',
+  muted:      '#6c6864',
+  smash:      '#22c55e',
+  pass:       '#ef4444',
+  border:     '#c9c2b6',
+};
+
+function DexTheme() {
+  const s = useSOP();
+  const { current, loading, sSmash, sPass, sSeen, globalVotes, checkedGens } = s;
+  const { phase } = useEntryPhase(current?.id);
+  const { active: voteActive, choice } = useVoteAnim();
+
+  const gSmash = Object.values(globalVotes).reduce((a, v) => a + v.smash, 0);
+  const gPass = Object.values(globalVotes).reduce((a, v) => a + v.pass, 0);
+
+  const typePalette = {
+    fire: '#ef6c4a', water: '#3aa1d3', grass: '#5fb35d', electric: '#e9c531',
+    psychic: '#d75aa4', ice: '#7ad3d7', dragon: '#7866b8', dark: '#3d3540',
+    fairy: '#e3a7c8', normal: '#9d9582', fighting: '#b85c3a', flying: '#8aaee8',
+    poison: '#9b59c1', ground: '#c9a05c', rock: '#998264', bug: '#8ab148',
+    ghost: '#6a5a93', steel: '#8a96a3',
+  };
+
+  return (
+    <div style={{
+      width: '100%', height: '100%',
+      background: DEX.surface,
+      color: DEX.text, fontFamily: '"Inter", system-ui, sans-serif',
+      display: 'flex', flexDirection: 'column', overflow: 'hidden',
+    }}>
+      <div style={{
+        background: `linear-gradient(180deg, ${DEX.red} 0%, ${DEX.redDeep} 100%)`,
+        color: '#fff', padding: '14px 22px',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        boxShadow: `inset 0 -1px 0 rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.15)`,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <DexLogo />
+          <div>
+            <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: 1 }}>RATEDEX</div>
+            <div style={{ fontSize: 10, color: '#ffd9d9', letterSpacing: 2, marginTop: 1 }}>
+              FIELD UNIT 03 · TELEMETRY LIVE
+            </div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 14 }}>
+          <DexLED color="#22c55e" pulse />
+          <DexLED color="#facc15" pulse />
+          <DexLED color="#3b82f6" pulse />
+        </div>
+        <div style={{ display: 'flex', gap: 22 }}>
+          <DexCount label="GLOBAL · SMASH" val={gSmash} color="#86efac" />
+          <DexCount label="GLOBAL · PASS" val={gPass} color="#fca5a5" />
+        </div>
+      </div>
+
+      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '200px 1fr 220px', overflow: 'hidden' }}>
+        <div style={{
+          background: DEX.surface2, padding: 18, overflow: 'auto',
+          borderRight: `1px solid ${DEX.border}`,
+        }}>
+          <DexLabel>REGION FILTER</DexLabel>
+          <DexCheck
+            label="All regions"
+            checked={checkedGens.size === GENS.length}
+            indeterminate={checkedGens.size > 0 && checkedGens.size < GENS.length}
+            onChange={(c) => toggleAllGens(c)}
+            bold
+          />
+          <div style={{ height: 1, background: DEX.border, margin: '12px 0' }} />
+          {GENS.map((g, i) => (
+            <DexCheck
+              key={i}
+              label={g.label}
+              sub={g.sub}
+              checked={checkedGens.has(i)}
+              onChange={(c) => toggleGen(i, c)}
+            />
+          ))}
+        </div>
+
+        <div style={{
+          position: 'relative', display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center', padding: '20px 22px', gap: 16,
+        }}>
+          <div style={{
+            width: 320,
+            background: DEX.panel,
+            borderRadius: 18,
+            padding: 10,
+            boxShadow: `0 1px 0 rgba(255,255,255,0.6), 0 12px 28px rgba(0,0,0,0.18), inset 0 0 0 1px ${DEX.panelHi}`,
+            position: 'relative',
+          }}>
+            <div style={{
+              position: 'absolute', top: 6, left: 14, width: 8, height: 8,
+              borderRadius: '50%', background: '#22c55e',
+              boxShadow: `0 0 8px #22c55e, inset 0 0 2px rgba(0,0,0,0.3)`,
+            }} />
+            <div style={{
+              position: 'absolute', top: 6, left: 30, width: 6, height: 6,
+              borderRadius: '50%', background: '#facc15',
+              boxShadow: `0 0 6px #facc15`,
+            }} />
+
+            <div style={{
+              background: `linear-gradient(180deg, ${DEX.screen} 0%, #050a12 100%)`,
+              borderRadius: 12,
+              padding: '14px 14px 18px',
+              boxShadow: `inset 0 0 0 1px #000, inset 0 0 28px rgba(0,255,200,0.08)`,
+              position: 'relative',
+              overflow: 'hidden',
+            }}>
+              <div style={{
+                position: 'absolute', inset: 0, pointerEvents: 'none',
+                background: `repeating-linear-gradient(0deg, rgba(255,255,255,0) 0 2px, rgba(255,255,255,0.025) 2px 3px)`,
+              }} />
+              <div style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                fontFamily: '"JetBrains Mono", ui-monospace, monospace',
+                fontSize: 10, color: DEX.screenInk, letterSpacing: 1.5,
+              }}>
+                <span>► ENC {current ? `#${String(current.id).padStart(4, '0')}` : '----'}</span>
+                <span style={{ color: DEX.screenDim }}>SCAN {String(sSeen).padStart(3, '0')}</span>
+              </div>
+
+              <div style={{ marginTop: 6, height: 1, background: `${DEX.screenInk}30` }} />
+
+              <CreatureStage
+                current={current}
+                phase={phase}
+                voteActive={voteActive}
+                choice={choice}
+                palette={DEX}
+                Capsule={DexCapsule}
+                pixelated
+                spriteFilter="drop-shadow(0 0 14px rgba(127,255,212,0.35))"
+                height={160}
+                spriteSize={140}
+              />
+
+              <div style={{
+                fontFamily: '"JetBrains Mono", ui-monospace, monospace',
+                color: DEX.screenInk, fontSize: 13, letterSpacing: 1.5,
+                textTransform: 'uppercase', textAlign: 'center', minHeight: 18,
+              }}>
+                {current && (phase === 'idle' || phase === 'reveal') ? current.name.replace(/-/g, ' ') : (loading ? 'SCANNING…' : '')}
+              </div>
+
+              <div style={{ marginTop: 8, display: 'flex', justifyContent: 'center', gap: 6 }}>
+                {current?.types.map(t => (
+                  <span key={t} style={{
+                    fontSize: 9,
+                    fontFamily: '"JetBrains Mono", ui-monospace, monospace',
+                    padding: '3px 9px', borderRadius: 99,
+                    background: `${typePalette[t] || '#888'}25`,
+                    border: `1px solid ${typePalette[t] || '#888'}`,
+                    color: typePalette[t] || '#888',
+                    letterSpacing: 1,
+                  }}>{t.toUpperCase()}</span>
+                ))}
+              </div>
+
+              <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {['HP', 'ATK', 'DEF'].map((k, i) => (
+                  <div key={k} style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    fontFamily: '"JetBrains Mono", ui-monospace, monospace',
+                    fontSize: 9, color: DEX.screenDim, letterSpacing: 1,
+                  }}>
+                    <span style={{ width: 22, color: DEX.screenInk }}>{k}</span>
+                    <div style={{ flex: 1, height: 4, background: `${DEX.screenInk}15`, borderRadius: 1 }}>
+                      <div style={{
+                        height: '100%', width: current ? `${30 + ((current.id * (i+3)) % 70)}%` : '0%',
+                        background: DEX.screenInk, borderRadius: 1, transition: 'width .35s',
+                      }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '10px 6px 4px',
+            }}>
+              <div style={{ display: 'flex', gap: 5 }}>
+                <div style={{ width: 16, height: 4, background: '#444', borderRadius: 1 }} />
+                <div style={{ width: 16, height: 4, background: '#444', borderRadius: 1 }} />
+                <div style={{ width: 16, height: 4, background: '#444', borderRadius: 1 }} />
+              </div>
+              <div style={{ display: 'flex', gap: 3 }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#444' }} />
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#444' }} />
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 12, width: 320, marginTop: 4 }}>
+            <DexButton onClick={() => vote('pass')} disabled={!current || phase !== 'idle'} variant="pass">
+              <span style={{ fontSize: 11, letterSpacing: 2, opacity: 0.85, display: 'block' }}>L · ABANDON</span>
+              <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: 2 }}>PASS</span>
+            </DexButton>
+            <DexButton onClick={() => vote('smash')} disabled={!current || phase !== 'idle'} variant="smash">
+              <span style={{ fontSize: 11, letterSpacing: 2, opacity: 0.85, display: 'block' }}>R · CAPTURE</span>
+              <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: 2 }}>SMASH</span>
+            </DexButton>
+          </div>
+          <button onClick={skip} style={{
+            background: 'transparent', border: `1px solid ${DEX.border}`,
+            color: DEX.muted, padding: '6px 18px', borderRadius: 99, cursor: 'pointer',
+            fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase',
+          }}>↪ Skip</button>
+        </div>
+
+        <div style={{
+          background: DEX.surface2, padding: 18, overflow: 'auto',
+          borderLeft: `1px solid ${DEX.border}`,
+        }}>
+          <DexLabel>TOP SMASH</DexLabel>
+          <Leaderboard mode="smash" votes={globalVotes} palette={{ ...DEX, smash: DEX.smash, muted: DEX.muted, ink: DEX.muted }} />
+          <div style={{ height: 16 }} />
+          <DexLabel>TOP PASS</DexLabel>
+          <Leaderboard mode="pass" votes={globalVotes} palette={{ ...DEX, pass: DEX.pass, muted: DEX.muted, ink: DEX.muted }} />
+        </div>
+      </div>
+
+      <div style={{
+        background: DEX.panel, color: '#fff', padding: '8px 22px',
+        display: 'flex', justifyContent: 'space-around', alignItems: 'center',
+        fontFamily: '"JetBrains Mono", ui-monospace, monospace',
+        fontSize: 11, letterSpacing: 2,
+      }}>
+        <span>SESS</span>
+        <span style={{ color: DEX.smash }}>SMASH · {String(sSmash).padStart(3, '0')}</span>
+        <span style={{ color: '#aaa' }}>SEEN · {String(sSeen).padStart(3, '0')}</span>
+        <span style={{ color: DEX.pass }}>PASS · {String(sPass).padStart(3, '0')}</span>
+      </div>
+    </div>
+  );
+}
+
+function DexLabel({ children }) {
+  return <div style={{
+    fontSize: 10, letterSpacing: 2, color: DEX.muted, fontWeight: 700,
+    marginBottom: 10, textTransform: 'uppercase',
+  }}>{children}</div>;
+}
+
+function DexCount({ label, val, color }) {
+  return (
+    <div style={{ textAlign: 'right' }}>
+      <div style={{
+        fontFamily: '"JetBrains Mono", ui-monospace, monospace',
+        fontSize: 18, color, fontWeight: 700, lineHeight: 1,
+      }}>{val.toLocaleString()}</div>
+      <div style={{ fontSize: 9, color: '#ffd9d9', letterSpacing: 1.5, marginTop: 3 }}>{label}</div>
+    </div>
+  );
+}
+
+function DexLED({ color, pulse }) {
+  return <div style={{
+    width: 10, height: 10, borderRadius: '50%',
+    background: color,
+    boxShadow: `0 0 6px ${color}, inset 0 0 2px rgba(0,0,0,0.3)`,
+    animation: pulse ? 'dexPulse 1.8s ease-in-out infinite' : 'none',
+  }} />;
+}
+
+function DexCheck({ label, sub, checked, indeterminate, onChange, bold }) {
+  const ref = React.useRef();
+  React.useEffect(() => { if (ref.current) ref.current.indeterminate = !!indeterminate; }, [indeterminate]);
+  return (
+    <label style={{ display: 'block', cursor: 'pointer', marginBottom: 9, userSelect: 'none' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+        <span style={{
+          width: 18, height: 18, borderRadius: 4,
+          background: checked ? DEX.red : '#fff',
+          border: `1.5px solid ${checked ? DEX.red : DEX.border}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0, transition: 'all .15s',
+        }}>
+          {checked && !indeterminate && <span style={{ color: '#fff', fontSize: 11, fontWeight: 900 }}>✓</span>}
+          {indeterminate && <span style={{ width: 8, height: 2, background: '#fff' }} />}
+        </span>
+        <input type="checkbox" ref={ref} checked={checked} onChange={(e) => onChange(e.target.checked)}
+          style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }} />
+        <span style={{ fontSize: 12, color: DEX.text, fontWeight: bold ? 700 : 500 }}>{label}</span>
+      </div>
+      {sub && <div style={{ fontSize: 10, color: DEX.muted, marginLeft: 27, marginTop: 2 }}>{sub}</div>}
+    </label>
+  );
+}
+
+function DexButton({ children, onClick, disabled, variant }) {
+  const color = variant === 'smash' ? DEX.smash : DEX.pass;
+  const colorDark = variant === 'smash' ? '#16a34a' : '#b91c1c';
+  return (
+    <button onClick={onClick} disabled={disabled} style={{
+      flex: 1, padding: '10px 0',
+      color: '#fff',
+      background: `linear-gradient(180deg, ${color} 0%, ${colorDark} 100%)`,
+      border: 'none',
+      borderRadius: 12,
+      boxShadow: `inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -2px 0 rgba(0,0,0,0.3), 0 4px 0 ${colorDark}, 0 6px 14px rgba(0,0,0,0.2)`,
+      cursor: disabled ? 'not-allowed' : 'pointer',
+      opacity: disabled ? 0.5 : 1,
+      transition: 'transform .08s, box-shadow .08s',
+      fontFamily: 'inherit',
+    }}
+    onMouseDown={e => { if (disabled) return; e.currentTarget.style.transform = 'translateY(3px)'; e.currentTarget.style.boxShadow = `inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -2px 0 rgba(0,0,0,0.3), 0 1px 0 ${colorDark}, 0 2px 6px rgba(0,0,0,0.2)`; }}
+    onMouseUp={e => { if (disabled) return; e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = `inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -2px 0 rgba(0,0,0,0.3), 0 4px 0 ${colorDark}, 0 6px 14px rgba(0,0,0,0.2)`; }}
+    onMouseLeave={e => { if (disabled) return; e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = `inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -2px 0 rgba(0,0,0,0.3), 0 4px 0 ${colorDark}, 0 6px 14px rgba(0,0,0,0.2)`; }}
+    >{children}</button>
+  );
+}
+
+function DexLogo() {
+  return (
+    <svg width="36" height="36" viewBox="0 0 36 36">
+      <rect x="2" y="2" width="32" height="32" rx="8" fill="#fff" />
+      <rect x="6" y="6" width="24" height="14" rx="3" fill={DEX.screen} />
+      <circle cx="12" cy="13" r="2.5" fill={DEX.screenInk} />
+      <circle cx="20" cy="13" r="2.5" fill={DEX.screenInk} opacity="0.5" />
+      <rect x="6" y="24" width="24" height="6" rx="2" fill={DEX.panel} />
+      <circle cx="10" cy="27" r="1.5" fill="#facc15" />
+      <circle cx="14" cy="27" r="1.5" fill="#22c55e" />
+      <circle cx="18" cy="27" r="1.5" fill="#3b82f6" />
+    </svg>
+  );
+}
+
+function DexCapsule({ phase }) {
+  const open = phase === 'flash';
+  const wobbling = phase === 'wobble';
+  const dropping = phase === 'drop';
+  return (
+    <div style={{
+      width: 80, height: 80, position: 'relative',
+      animation:
+        dropping ? 'sopDrop 220ms cubic-bezier(.4,1.4,.5,1) forwards' :
+        wobbling ? 'sopWobble 680ms ease-in-out' :
+        'none',
+    }}>
+      <svg viewBox="0 0 80 80" width="80" height="80" style={{ overflow: 'visible' }}>
+        <defs>
+          <linearGradient id="dexChrome" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#e5e7eb" />
+            <stop offset="50%" stopColor="#9ca3af" />
+            <stop offset="100%" stopColor="#4b5563" />
+          </linearGradient>
+        </defs>
+        <g style={{ transformOrigin: '40px 40px', animation: open ? 'sopCapsuleOpenTop 220ms ease-out forwards' : 'none' }}>
+          <path d="M14 40 Q14 14 40 14 Q66 14 66 40 Z" fill="url(#dexChrome)" stroke="#1a1a1f" strokeWidth="2" />
+          <path d="M22 30 Q26 22 38 20" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.7" />
+        </g>
+        <g style={{ transformOrigin: '40px 40px', animation: open ? 'sopCapsuleOpenBot 220ms ease-out forwards' : 'none' }}>
+          <path d="M14 40 Q14 66 40 66 Q66 66 66 40 Z" fill={DEX.red} stroke="#1a1a1f" strokeWidth="2" />
+          <path d="M22 50 Q26 58 38 60" stroke="#fff" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.5" />
+        </g>
+        <line x1="12" y1="40" x2="68" y2="40" stroke="#7fffd4" strokeWidth="2"
+          style={{ filter: 'drop-shadow(0 0 4px #7fffd4)' }} />
+        <circle cx="40" cy="40" r="7" fill="#1a1a1f" stroke={DEX.screenInk} strokeWidth="1.5" />
+        <circle cx="40" cy="40" r="3" fill={DEX.screenInk}
+          style={{ filter: 'drop-shadow(0 0 4px #7fffd4)' }} />
+      </svg>
+    </div>
+  );
+}
+
+if (!document.getElementById('dex-anim-styles')) {
+  const s = document.createElement('style');
+  s.id = 'dex-anim-styles';
+  s.textContent = `
+    @keyframes dexPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.5; transform: scale(0.85); }
+    }
+  `;
+  document.head.appendChild(s);
+}
+
+window.DexTheme = DexTheme;
+
+
+// ===== js/theme-switcher.jsx =====
+
+const THEMES = [
+  { id: 'foil',      label: 'Foil',       sub: 'Holographic trading card',
+    swatch: 'linear-gradient(135deg, #f3d27a 0%, #c8a14c 50%, #f3d27a 100%)' },
+  { id: 'cartridge', label: 'Cartridge 88', sub: 'Game Boy DMG',
+    swatch: 'linear-gradient(135deg, #9bbc0f 0%, #306230 100%)' },
+  { id: 'dex',       label: 'Dex OS',     sub: 'Modern device',
+    swatch: 'linear-gradient(135deg, #f25d5d 0%, #a01d1d 100%)' },
+];
+
+function ThemeSwitcher({ current, onChange }) {
+  const [open, setOpen] = React.useState(false);
+  return (
+    <div style={{
+      position: 'fixed', right: 16, bottom: 16, zIndex: 9999,
+      fontFamily: '"Inter", system-ui, sans-serif',
+    }}>
+      {open && (
+        <div style={{
+          position: 'absolute', right: 0, bottom: 'calc(100% + 8px)',
+          background: '#fff',
+          borderRadius: 14, padding: 8, minWidth: 240,
+          boxShadow: '0 10px 32px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.08)',
+        }}>
+          <div style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: 2, color: '#6b7280',
+            padding: '8px 10px 4px', textTransform: 'uppercase',
+          }}>Theme</div>
+          {THEMES.map(t => (
+            <button key={t.id}
+              onClick={() => { onChange(t.id); setOpen(false); }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                width: '100%', padding: '10px',
+                background: current === t.id ? 'rgba(99,102,241,0.07)' : 'transparent',
+                border: 'none', borderRadius: 10, cursor: 'pointer',
+                color: '#111827', textAlign: 'left',
+                transition: 'background .12s',
+              }}
+              onMouseEnter={e => { if (current !== t.id) e.currentTarget.style.background = 'rgba(0,0,0,0.04)'; }}
+              onMouseLeave={e => { if (current !== t.id) e.currentTarget.style.background = 'transparent'; }}
+            >
+              <span style={{
+                width: 32, height: 32, borderRadius: 8,
+                background: t.swatch,
+                boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.15)',
+                flexShrink: 0,
+              }} />
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 600 }}>{t.label}</div>
+                <div style={{ fontSize: 11, color: '#6b7280' }}>{t.sub}</div>
+              </span>
+              {current === t.id && <span style={{ color: '#6366f1', fontSize: 16, fontWeight: 700 }}>✓</span>}
+            </button>
+          ))}
+        </div>
+      )}
+      <button
+        onClick={() => setOpen(o => !o)}
+        title="Switch theme"
+        style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          background: '#fff',
+          padding: '8px 12px 8px 8px',
+          border: 'none', borderRadius: 99, cursor: 'pointer',
+          boxShadow: '0 4px 14px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.08)',
+          fontFamily: 'inherit', fontSize: 12, fontWeight: 600, color: '#111827',
+        }}
+      >
+        <span style={{
+          width: 24, height: 24, borderRadius: '50%',
+          background: THEMES.find(t => t.id === current)?.swatch,
+          boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.15)',
+        }} />
+        <span>{THEMES.find(t => t.id === current)?.label}</span>
+        <span style={{ color: '#9ca3af', fontSize: 10, marginLeft: 2 }}>▼</span>
+      </button>
+    </div>
+  );
+}
+
+window.ThemeSwitcher = ThemeSwitcher;
+window.THEMES = THEMES;
+
+
+// ===== App entry =====
+const STORAGE_KEY = 'sop_theme';
+
+function App() {
+  const [theme, setTheme] = React.useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved && ['foil', 'cartridge', 'dex'].includes(saved)) return saved;
+    } catch (e) {}
+    return 'foil';
   });
+
+  React.useEffect(() => {
+    try { localStorage.setItem(STORAGE_KEY, theme); } catch (e) {}
+  }, [theme]);
+
+  const ThemeComponent = {
+    foil: FoilTheme,
+    cartridge: CartridgeTheme,
+    dex: DexTheme,
+  }[theme];
+
+  return (
+    <div style={{ width: '100%', height: '100%' }}>
+      <ThemeComponent />
+      <ThemeSwitcher current={theme} onChange={setTheme} />
+    </div>
+  );
 }
 
-function switchTab(tab, btn) {
-  currentTab = tab;
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById(`tab-${tab}`).classList.add('active');
-}
-
-document.getElementById('bg-glow') || document.getElementById('center').insertAdjacentHTML('afterbegin','<div id="bg-glow"></div>');
-
-buildFilters();
-loadVotes();
-
-(async () => {
-  const r = await fetch('https://pokeapi.co/api/v2/pokemon?limit=1025');
-  const d = await r.json();
-  activePool = d.results.map((_, i) => i + 1);
-  document.getElementById('loading-overlay').style.display = 'none';
-  nextPokemon();
-})();
-</script>
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
 </body>
 </html>
