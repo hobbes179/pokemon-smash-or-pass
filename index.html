@@ -154,12 +154,14 @@ function vote(choice) {
 
   playSfx(choice);
 
-  db.rpc('record_vote', {
-    p_id: String(id),
-    p_choice: choice,
-    p_name: s.current.name || '',
-    p_sprite: s.current.sprite || '',
-  }).catch(() => {});
+  try {
+    db.rpc('record_vote', {
+      p_id: String(id),
+      p_choice: choice,
+      p_name: s.current.name || '',
+      p_sprite: s.current.sprite || '',
+    }).catch(() => {});
+  } catch (e) {}
 
   setTimeout(() => advance(), 1300);
 }
